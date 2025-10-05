@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v0.8)</title>
+<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v1.0)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -35,11 +35,13 @@
   .banner--new{background:rgba(21,128,61,.2); border-color:#15803d;}
   .banner--warn{background:rgba(245,158,11,.15); border-color:var(--amber);}  
   textarea{background:#0b1026; border:1px solid rgba(120,160,255,.25); width:100%; min-height:120px; border-radius:10px; padding:8px; color:#d8e9ff;}
+  .dropzone{border:2px dashed rgba(0,255,255,.35); border-radius:12px; padding:14px; text-align:center; background:rgba(12,18,40,.5)}
+  .dropzone.hover{background:rgba(0,255,255,.08)}
 </style>
 </head>
 <body class="p-5">
   <h1 class="title text-3xl md:text-4xl mb-2">🎛️ Multi Lottery Tool</h1>
-  <p class="opacity-80 mb-4">Keno, Eurojackpot und 6aus49 – Gruppen‑Modus, Maps & Analyse. (v0.8)</p>
+  <p class="opacity-80 mb-4">Keno, Eurojackpot und 6aus49 – Gruppen‑Modus, Maps & Analyse. (v1.0)</p>
 
   <div class="glass mb-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
@@ -58,7 +60,7 @@
   <div class="glass mb-4" id="archivBox">
     <h2 class="text-xl font-bold mb-2">📂 Archiv</h2>
     <div id="updateBanner" class="banner banner--new"><span>🟢 Neue Ziehung erkannt:</span><b id="newDrawDate"></b></div>
-    <div id="staleBanner" class="banner banner--warn"><span>🟠 Hinweis:</span><span>Archiv nicht online geprüft. Lokale Sicherung geladen.</span></div>
+    <div id="staleBanner" class="banner banner--warn"><span>🟠 Hinweis:</span><span>Archiv offline (CORS) – Lokale Datei verwenden.</span></div>
     <p id="statusText" class="text-sm mb-2">Noch kein Archiv geladen.</p>
 
     <div class="glass mb-3">
@@ -66,18 +68,22 @@
       <div class="flex flex-col md:flex-row gap-2">
         <input id="archiveUrl" class="bg-gray-900 p-2 rounded flex-1" placeholder="Archiv-URL">
         <button type="button" id="loadLatestBtn" class="btn btn--green">📥 Neueste laden</button>
-        <button type="button" id="forceDlBtn" class="btn btn--amber">⬇️ ZIP speichern</button>
+        <button type="button" id="forceDlBtn" class="btn btn--amber">⬇️ Direkt herunterladen</button>
         <a id="directDl" class="btn btn--gray" target="_blank" rel="noopener">🔗 Direktlink</a>
       </div>
-      <p class="text-xs text-gray-300 mt-2">ZIP/TXT/CSV werden automatisch zusammengeführt. Bei CORS‑Problemen mehrere Fallbacks. Alternativ unten manuell laden oder Rohtext einfügen.</p>
+      <p class="text-xs text-gray-300 mt-2">Wenn Online-Check wegen CORS fehlschlägt, öffnet sich der Archiv-Link in einem neuen Tab. Speichere die ZIP/TXT/CSV und wähle sie unten aus – oder nutze „Datei öffnen“ (ohne ZIP entpacken).</p>
     </div>
 
     <div class="glass mb-3">
       <div class="font-semibold mb-2">Manuell laden</div>
-      <label class="file-label">
-        📄 Dateien auswählen (mehrere möglich)
-        <input multiple type="file" id="zipInput" class="file-input" accept=".zip,.txt,.csv">
-      </label>
+      <div class="dropzone" id="dropzone">Hier ZIP/TXT/CSV <b>ziehen & ablegen</b> oder unten auswählen.</div>
+      <div class="mt-2">
+        <label class="file-label">
+          📄 Datei auswählen
+          <input multiple type="file" id="zipInput" class="file-input" accept=".zip,.txt,.csv">
+        </label>
+        <button type="button" id="openPickerBtn" class="btn btn--gray ml-2">📂 Datei öffnen (Systemdialog)</button>
+      </div>
       <span id="fileName" class="ml-2 text-sm opacity-80">Keine Datei ausgewählt</span>
     </div>
 
@@ -337,9 +343,9 @@ function buildMaps(hiMain=[], hiBonus=[]){
   } else { $('#bonusMapWrap').classList.add('hidden'); }
 }
 
-/* ======================== Downloader ========================= */
+/* ======================== Downloader & Fallbacks ========================= */
 async function ensureJSZip(){ return !!window.JSZip; }
-async function fetchWithProxies(url){
+async function tryFetchProxies(url){
   const candidates = [
     {u:url, t:'direct'},
     {u:'https://cors.isomorphic-git.org/'+url, t:'cors-proxy'},
@@ -362,11 +368,50 @@ async function fetchWithProxies(url){
         let combined=''; for(const f of files){ combined += "\n" + await f.async('string'); }
         return combined;
       } else { return await res.text(); }
-    }catch(e){
-      lastErr = e;
-    }
+    }catch(e){ lastErr = e; }
   }
   throw lastErr || new Error('Download fehlgeschlagen');
+}
+
+async function openNativeDownload(url){
+  window.open(url, '_blank', 'noopener,noreferrer');
+  $('#statusText').textContent='Direkter Download im neuen Tab gestartet. Bitte speichern und unten Datei auswählen – oder „Datei öffnen“ nutzen.';
+  $('#staleBanner').style.display='flex';
+}
+
+async function useFilePickerAndParse(){
+  if(!window.showOpenFilePicker){ alert('Dein Browser unterstützt den System-Dateidialog hier nicht. Benutze bitte „Datei auswählen“ oder Drag&Drop.'); return; }
+  try{
+    const [handle] = await showOpenFilePicker({
+      multiple:false,
+      types:[{ description:'Archive/Text', accept:{ 'application/zip':['.zip'], 'text/plain':['.txt','.csv'] } }]
+    });
+    const file = await handle.getFile();
+    await handleFiles([file]);
+  }catch(e){ /* cancelled */ }
+}
+
+async function handleFiles(fileList){
+  const files = Array.from(fileList||[]);
+  if(!files.length) return;
+  $('#fileName').textContent = files.map(f=>f.name).join(', ');
+  try{
+    let combined='';
+    for(const file of files){
+      if(file.name.toLowerCase().endsWith('.zip')){
+        const zip=await JSZip.loadAsync(file); const entries=Object.values(zip.files);
+        for(const f of entries){ if(/\.(txt|csv)$/i.test(f.name)){ combined += "\n" + await f.async('string'); } }
+      }else{ combined += "\n" + await file.text(); }
+    }
+    const latest=parseArchiveText(combined,true);
+    if(latest){
+      localStorage.setItem(lsKey('lastdate'), latest);
+      const now=new Date().toISOString().replace('T',' ').slice(0,16);
+      localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now);
+    }
+  }catch(err){
+    $('#statusText').textContent='Fehler: '+err.message;
+  }
 }
 
 async function loadLatestAndDetect(){
@@ -375,7 +420,7 @@ async function loadLatestAndDetect(){
   if(!url){ $('#statusText').textContent='Keine URL gesetzt. Bitte manuell laden.'; return; }
   $('#statusText').textContent='Online-Archiv wird geprüft…';
   try{
-    const raw=await fetchWithProxies(url);
+    const raw=await tryFetchProxies(url);
     const latest=parseArchiveText(raw,true);
     const lastSeen=localStorage.getItem(lsKey('lastdate'));
     if(latest){
@@ -385,9 +430,7 @@ async function loadLatestAndDetect(){
       localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now);
     }
   }catch(e){
-    const saved=localStorage.getItem(lsKey('archive'));
-    if(saved){ parseArchiveText(saved,false); $('#staleBanner').style.display='flex'; }
-    else { $('#statusText').textContent='Fehler beim Laden: '+e.message+' • Bitte ZIP/TXT unten manuell auswählen oder Rohtext einfügen.'; }
+    await openNativeDownload(url);
   }
 }
 
@@ -519,34 +562,26 @@ function applyGame(){
 $('#gameSelect').addEventListener('change', e=>{ GAME=GAMES[e.target.value]; applyGame(); });
 $('#kenoType').addEventListener('change', updateGroupCounters);
 
-document.getElementById('loadLatestBtn').addEventListener('click', loadLatestAndDetect);
-document.getElementById('forceDlBtn').addEventListener('click', async ()=>{
-  const url=$('#archiveUrl').value.trim();
-  try{ const res=await fetch(url,{mode:'cors', referrerPolicy:'no-referrer'}); const blob=await res.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${GAME.key}_archiv.zip`; a.click(); URL.revokeObjectURL(a.href); }catch(e){ alert('Direkt-Download nicht möglich: '+e.message); }
-});
-document.getElementById('zipInput').addEventListener('change', async (e)=>{
-  const files=Array.from(e.target.files||[]); if(!files.length) return; $('#fileName').textContent=files.map(f=>f.name).join(', ');
-  try{
-    let combined='';
-    for(const file of files){
-      if(file.name.toLowerCase().endsWith('.zip')){
-        const zip=await JSZip.loadAsync(file); const entries=Object.values(zip.files);
-        for(const f of entries){ if(/\.(txt|csv)$/i.test(f.name)){ combined += "\n" + await f.async('string'); } }
-      }else{ combined += "\n" + await file.text(); }
-    }
-    const latest=parseArchiveText(combined,true);
-    if(latest){ localStorage.setItem(lsKey('lastdate'), latest); const now=new Date().toISOString().replace('T',' ').slice(0,16); localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now); }
-  }catch(err){ $('#statusText').textContent='Fehler: '+err.message; }
-});
+// Buttons
+$('#loadLatestBtn').addEventListener('click', loadLatestAndDetect);
+$('#forceDlBtn').addEventListener('click', async ()=>{ const url=$('#archiveUrl').value.trim(); try{ window.open(url, '_blank', 'noopener,noreferrer'); }catch(e){ alert('Direkt-Download nicht möglich: '+e.message); } });
+$('#openPickerBtn').addEventListener('click', useFilePickerAndParse);
 
-document.getElementById('parsePasteBtn').addEventListener('click', ()=>{
-  const txt = $('#rawPaste').value || '';
-  if(!txt.trim()){ alert('Bitte zuerst Text einfügen.'); return; }
-  parseArchiveText(txt,true);
-});
-document.getElementById('clearPasteBtn').addEventListener('click', ()=>{ $('#rawPaste').value=''; });
+// File input
+$('#zipInput').addEventListener('change', async (e)=>{ await handleFiles(e.target.files); });
 
-document.getElementById('generateBtn').addEventListener('click', ()=>{
+// Drag & Drop
+const dz = document.getElementById('dropzone');
+['dragenter','dragover'].forEach(ev=> dz.addEventListener(ev, (e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add('hover'); }));
+['dragleave','drop'].forEach(ev=> dz.addEventListener(ev, (e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove('hover'); }));
+dz.addEventListener('drop', (e)=>{ const files = e.dataTransfer?.files || []; handleFiles(files); });
+
+// Paste
+$('#parsePasteBtn').addEventListener('click', ()=>{ const txt = $('#rawPaste').value || ''; if(!txt.trim()){ alert('Bitte zuerst Text einfügen.'); return; } parseArchiveText(txt,true); });
+$('#clearPasteBtn').addEventListener('click', ()=>{ $('#rawPaste').value=''; });
+
+// Generator & Analyse
+$('#generateBtn').addEventListener('click', ()=>{
   if(!draws.length){ alert('Bitte zuerst ein Archiv laden.'); return; }
   const total= +$('#kombis').value || 1; $('#liveOutput').textContent=''; $('#cards').innerHTML=''; generated=[]; const seen=new Set();
   for(let i=1;i<=total;i++){
@@ -561,8 +596,8 @@ document.getElementById('generateBtn').addEventListener('click', ()=>{
     }catch(e){ const err=$('#groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; }
   }
 });
-document.getElementById('clearGeneratedBtn').addEventListener('click', ()=>{ generated=[]; $('#cards').innerHTML=''; $('#liveOutput').textContent=''; buildMaps([],[]); });
-document.getElementById('analyseAllBtn').addEventListener('click', ()=>{
+$('#clearGeneratedBtn').addEventListener('click', ()=>{ generated=[]; $('#cards').innerHTML=''; $('#liveOutput').textContent=''; buildMaps([],[]); });
+$('#analyseAllBtn').addEventListener('click', ()=>{
   if(!generated.length){ alert('Bitte zuerst Varianten generieren.'); return; }
   let html = `<div class="glass mt-2"><div class="font-bold mb-2">Auswertung – ${GAME.name}</div>`;
   html += '<div class="overflow-auto"><table class="text-sm min-w-full"><thead><tr>';
