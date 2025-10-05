@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v1.0)</title>
+<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v1.4)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -34,14 +34,11 @@
   .banner{display:none;align-items:center;gap:10px; border:1px solid rgba(255,255,255,.15); border-radius:12px; padding:10px 12px; margin-bottom:10px;}
   .banner--new{background:rgba(21,128,61,.2); border-color:#15803d;}
   .banner--warn{background:rgba(245,158,11,.15); border-color:var(--amber);}  
-  textarea{background:#0b1026; border:1px solid rgba(120,160,255,.25); width:100%; min-height:120px; border-radius:10px; padding:8px; color:#d8e9ff;}
-  .dropzone{border:2px dashed rgba(0,255,255,.35); border-radius:12px; padding:14px; text-align:center; background:rgba(12,18,40,.5)}
-  .dropzone.hover{background:rgba(0,255,255,.08)}
 </style>
 </head>
 <body class="p-5">
   <h1 class="title text-3xl md:text-4xl mb-2">🎛️ Multi Lottery Tool</h1>
-  <p class="opacity-80 mb-4">Keno, Eurojackpot und 6aus49 – Gruppen‑Modus, Maps & Analyse. (v1.0)</p>
+  <p class="opacity-80 mb-4">Keno, Eurojackpot und 6aus49 – Gruppen‑Modus, Maps & Analyse. (v1.4)</p>
 
   <div class="glass mb-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
@@ -71,12 +68,12 @@
         <button type="button" id="forceDlBtn" class="btn btn--amber">⬇️ Direkt herunterladen</button>
         <a id="directDl" class="btn btn--gray" target="_blank" rel="noopener">🔗 Direktlink</a>
       </div>
-      <p class="text-xs text-gray-300 mt-2">Wenn Online-Check wegen CORS fehlschlägt, öffnet sich der Archiv-Link in einem neuen Tab. Speichere die ZIP/TXT/CSV und wähle sie unten aus – oder nutze „Datei öffnen“ (ohne ZIP entpacken).</p>
+      <p class="text-xs opacity-80 mt-2">Falls CORS blockiert: Es öffnet sich der Original‑Link in einem neuen Tab. Datei speichern und unten laden. ZIP wird automatisch gelesen.</p>
     </div>
 
     <div class="glass mb-3">
       <div class="font-semibold mb-2">Manuell laden</div>
-      <div class="dropzone" id="dropzone">Hier ZIP/TXT/CSV <b>ziehen & ablegen</b> oder unten auswählen.</div>
+      <div id="dropzone" style="border:2px dashed rgba(0,255,255,.35); border-radius:12px; padding:14px; text-align:center; background:rgba(12,18,40,.5)">Hier ZIP/TXT/CSV <b>ziehen & ablegen</b> oder unten auswählen.</div>
       <div class="mt-2">
         <label class="file-label">
           📄 Datei auswählen
@@ -87,21 +84,12 @@
       <span id="fileName" class="ml-2 text-sm opacity-80">Keine Datei ausgewählt</span>
     </div>
 
-    <div class="glass mb-3">
-      <div class="font-semibold mb-2">Oder Rohtext einfügen</div>
-      <textarea id="rawPaste" placeholder="Hier Inhalte aus der Archiv‑Datei einfügen …"></textarea>
-      <div class="mt-2 flex gap-2">
-        <button type="button" id="parsePasteBtn" class="btn btn--amber">📄 Rohtext parsen</button>
-        <button type="button" id="clearPasteBtn" class="btn btn--gray">🗑️ Leeren</button>
-      </div>
-    </div>
-
     <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
-      <div><div class="text-sm text-gray-300">Ziehungen</div><div id="kpiCount" class="font-bold">–</div></div>
-      <div><div class="text-sm text-gray-300">Von</div><div id="kpiFrom" class="font-bold">–</div></div>
-      <div><div class="text-sm text-gray-300">Bis</div><div id="kpiTo" class="font-bold">–</div></div>
-      <div><div class="text-sm text-gray-300">Letzter Online-Check</div><div id="kpiFresh" class="font-bold">–</div></div>
-      <div><div class="text-sm text-gray-300">Spiel-Format</div><div id="kpiFormat" class="font-bold">–</div></div>
+      <div><div class="text-sm opacity-80">Ziehungen</div><div id="kpiCount" class="font-bold">–</div></div>
+      <div><div class="text-sm opacity-80">Von</div><div id="kpiFrom" class="font-bold">–</div></div>
+      <div><div class="text-sm opacity-80">Bis</div><div id="kpiTo" class="font-bold">–</div></div>
+      <div><div class="text-sm opacity-80">Letzter Online‑Check</div><div id="kpiFresh" class="font-bold">–</div></div>
+      <div><div class="text-sm opacity-80">Spiel‑Format</div><div id="kpiFormat" class="font-bold">–</div></div>
     </div>
 
     <div id="diag" class="mt-3 text-xs opacity-80 hidden"></div>
@@ -130,7 +118,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <div><label class="text-sm text-gray-300">Anzahl Kombinationen</label>
+      <div><label class="text-sm opacity-80">Anzahl Kombinationen</label>
         <input type="number" id="kombis" value="5" min="1" max="50" class="bg-gray-900 p-2 rounded w-full"></div>
       <div class="grid grid-cols-3 gap-2">
         <button type="button" id="generateBtn" class="btn btn--green">⚡ Generieren</button>
@@ -141,7 +129,7 @@
     </div>
 
     <div id="groupUI" class="mt-4">
-      <div class="mb-1 text-sm text-gray-300 flex items-center gap-3 flex-wrap">
+      <div class="mb-1 text-sm opacity-80 flex items-center gap-3 flex-wrap">
         <span>Gruppen: exakt <b id="needMain"></b> Hauptzahlen</span>
         <span id="mainCounter" class="counter red">0/0</span>
         <span id="bonusCounter" class="counter green" style="display:none">0/0</span>
@@ -178,451 +166,78 @@
   </div>
 
 <script>
-/* ============================= Config ===================================== */
 const GAMES={
-  ke:{
-    name:'Keno', key:'ke',
-    url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_keno.zip',
-    main:{from:1,to:70,pick:20,
-      groups:[
-        {label:'1–10',from:1,to:10},
-        {label:'11–20',from:11,to:20},
-        {label:'21–30',from:21,to:30},
-        {label:'31–40',from:31,to:40},
-        {label:'41–50',from:41,to:50},
-        {label:'51–60',from:51,to:60},
-        {label:'61–70',from:61,to:70},
-      ]},
-    bonus:{enabled:false},
-    formatLabel:'20 aus 70 (Ziehung) • Tippgröße = Keno‑Typ'
-  },
-  ej:{
-    name:'Eurojackpot', key:'ej',
-    url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_eurojackpot.zip',
-    main:{from:1,to:50,pick:5,
-      groups:[
-        {label:'1–10',from:1,to:10},
-        {label:'11–20',from:11,to:20},
-        {label:'21–30',from:21,to:30},
-        {label:'31–40',from:31,to:40},
-        {label:'41–50',from:41,to:50}
-      ]},
-    bonus:{enabled:true,label:'Eurozahlen',from:1,to:12,pick:2,groups:[{label:'1–6',from:1,to:6},{label:'7–12',from:7,to:12}]},
-    formatLabel:'5 aus 50 + 2 aus 12'
-  },
-  lz:{
-    name:'Lotto 6aus49', key:'lz',
-    url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_lotto.zip',
-    main:{from:1,to:49,pick:6,
-      groups:[
-        {label:'1–10',from:1,to:10},
-        {label:'11–20',from:11,to:20},
-        {label:'21–30',from:21,to:30},
-        {label:'31–40',from:31,to:40},
-        {label:'41–49',from:41,to:49}
-      ]},
-    bonus:{enabled:true,label:'Superzahl',from:0,to:9,pick:1,groups:[{label:'0–4',from:0,to:4},{label:'5–9',from:5,to:9}]},
-    formatLabel:'6 aus 49 (+ SZ)'
-  }
+  ke:{ name:'Keno', key:'ke', url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_keno.zip',
+    main:{from:1,to:70,pick:20, groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–50',from:41,to:50},{label:'51–60',from:51,to:60},{label:'61–70',from:61,to:70}]},
+    bonus:{enabled:false}, formatLabel:'20 aus 70 (Ziehung) • Tippgröße = Keno‑Typ' },
+  ej:{ name:'Eurojackpot', key:'ej', url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_eurojackpot.zip',
+    main:{from:1,to:50,pick:5, groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–50',from:41,to:50}]},
+    bonus:{enabled:true,label:'Eurozahlen',from:1,to:12,pick:2,groups:[{label:'1–6',from:1,to:6},{label:'7–12',from:7,to:12}]}, formatLabel:'5 aus 50 + 2 aus 12' },
+  lz:{ name:'Lotto 6aus49', key:'lz', url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_lotto.zip',
+    main:{from:1,to:49,pick:6, groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–49',from:41,to:49}]},
+    bonus:{enabled:true,label:'Superzahl',from:0,to:9,pick:1,groups:[{label:'0–4',from:0,to:4},{label:'5–9',from:5,to:9}]}, formatLabel:'6 aus 49 (+ SZ)' }
 };
-
-/* ============================= State ====================================== */
 let GAME=GAMES.ke; let draws=[]; let freqMain=[]; let freqBonus=[]; let generated=[];
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
 function setText(sel,val){ const el=$(sel); if(el) el.textContent=val; }
 function lsKey(k){ return `${GAME.key}_${k}`; }
-
-/* ============================ Helpers ===================================== */
 function iso(y,m,d){ const Y=(+y<100)?(2000+(+y)):(+y); const dt=new Date(Date.UTC(Y,+m-1,+d)); return isNaN(dt)? null : dt.toISOString().slice(0,10); }
 function normalize(s){ return s.replace(/\uFEFF/g,'').replace(/\r\n?/g,'\n'); }
-
-// Date detectors: DMY (12.01.2000) OR YMD (2000-01-12)
-const reDMY = /(\b\d{1,2})[.\-\/]([0-1]?\d)[.\-\/]([12]?\d{3})\b/;
-const reYMD = /(\b[12]\d{3})[.\-\/]([0-1]?\d)[.\-\/]([0-3]?\d)\b/;
-
-function takeDateAnywhere(line){
-  line = line.trim();
-  let m = line.match(reDMY);
-  if(m){ const d=+m[1], mo=+m[2], y=+m[3]; if(d>=1&&d<=31&&mo>=1&&mo<=12&&y>=1900&&y<=2100){ return {date: iso(y,mo,d), tail: line.slice(m.index + m[0].length)}; } }
-  m = line.match(reYMD);
-  if(m){ const y=+m[1], mo=+m[2], d=+m[3]; if(d>=1&&d<=31&&mo>=1&&mo<=12&&y>=1900&&y<=2100){ return {date: iso(y,mo,d), tail: line.slice(m.index + m[0].length)}; } }
-  return null;
-}
-
-function numbersFromTail(tail){
-  // after the date, split by any non-digit
-  const parts = tail.replace(/[A-Za-z]+/g,' ').split(/[^0-9]+/).filter(Boolean);
-  return parts.map(p=>parseInt(p,10)).filter(n=>Number.isInteger(n));
-}
-
-/* ---- Splitter ---- */
-function extractSets(nums){
-  if(GAME.key==='ke'){
-    const main=[]; for(const n of nums){ if(n>=1&&n<=70){ main.push(n); if(main.length===20) break; } }
-    return (main.length===20)? [{main: Array.from(new Set(main)).sort((a,b)=>a-b), bonus:[]}] : [];
-  }
-  const out=[]; let i=0;
-  while(i<nums.length){
-    const main=[]; let j=i;
-    while(j<nums.length && main.length<GAME.main.pick){ const n=nums[j]; if(n>=GAME.main.from && n<=GAME.main.to) main.push(n); j++; }
-    if(main.length===GAME.main.pick){
-      if(GAME.key==='lz' && j<nums.length && nums[j]>=GAME.main.from && nums[j]<=GAME.main.to) j++;
-      let bonus=[];
-      if(GAME.bonus?.enabled && GAME.bonus.pick>0){
-        while(j<nums.length && bonus.length<GAME.bonus.pick){ const b=nums[j]; if(b>=GAME.bonus.from && b<=GAME.bonus.to) bonus.push(b); j++; }
-        while(j<nums.length && nums[j]>=GAME.bonus.from && nums[j]<=GAME.bonus.to) j++;
-      }else{ while(j<nums.length && nums[j]>=0 && nums[j]<=9) j++; }
-      out.push({main: Array.from(new Set(main)).sort((a,b)=>a-b), bonus: Array.from(new Set(bonus)).sort((a,b)=>a-b)});
-      i=j;
-    } else { break; }
-  }
-  return out;
-}
-
-/* ---- Parser ---- */
-function parseArchiveText(txt, save=true){
-  try{
-    const lines = normalize(txt).split('\n').map(l=>l.trim()).filter(Boolean);
-    draws=[]; freqMain=Array(GAME.main.to+1).fill(0); freqBonus=Array((GAME.bonus?.to??0)+1).fill(0);
-    let diag={total:0, matched:0, skipped:0, reasons:{}};
-
-    for(const line of lines){
-      diag.total++;
-      const rec = takeDateAnywhere(line);
-      if(!rec){ diag.skipped++; diag.reasons['kein Datum']=(diag.reasons['kein Datum']||0)+1; continue; }
-      const nums = numbersFromTail(rec.tail);
-      const sets = extractSets(nums);
-      if(!sets.length){ diag.skipped++; diag.reasons['unvollständig']=(diag.reasons['unvollständig']||0)+1; continue; }
-      for(const s of sets){
-        const needed = (GAME.key==='ke'?20:GAME.main.pick);
-        if(s.main.length>=needed){
-          draws.push({date:rec.date, main:s.main, bonus:s.bonus});
-          s.main.forEach(n=>freqMain[n]++);
-          (s.bonus||[]).forEach(b=>{ if(freqBonus[b]!=null) freqBonus[b]++; });
-          diag.matched++;
-        } else { diag.skipped++; diag.reasons['nicht genug Hauptzahlen']=(diag.reasons['nicht genug Hauptzahlen']||0)+1; }
-      }
-    }
-
-    if(!draws.length) throw new Error('Keine gültigen Ziehungen erkannt.');
-    draws.sort((a,b)=>a.date.localeCompare(b.date));
-    setText('#kpiCount', draws.length); setText('#kpiFrom', draws[0].date); setText('#kpiTo', draws.at(-1).date);
-    $('#statusText').textContent='Archiv geladen ✔';
-    buildMaps([],[]);
-    if(save){ localStorage.setItem(lsKey('archive'), txt); localStorage.setItem(lsKey('lastdate'), draws.at(-1).date); }
-
-    const d=$('#diag'); d.classList.remove('hidden');
-    const reasons = Object.entries(diag.reasons).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<li>${k}: <b>${v}</b></li>`).join('');
-    d.innerHTML = `🔎 Parser-Diagnose: Zeilen insgesamt <b>${diag.total}</b>, erkannt <b>${diag.matched}</b>, übersprungen <b>${diag.skipped}</b><ul class="list-disc pl-6">${reasons}</ul>`;
-
-    return draws.at(-1).date;
-  }catch(e){ $('#statusText').textContent='Fehler: '+e.message; return null; }
-}
-
-/* ========================== Maps ============================= */
-function buildMaps(hiMain=[], hiBonus=[]){
-  const host=$('#mapMain'); host.innerHTML=''; host.style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
-  const max = Math.max(...freqMain.slice(GAME.main.from)) || 1;
-  for(let n=GAME.main.from; n<=GAME.main.to; n++){
-    const f=freqMain[n]||0; const alpha=0.1+0.9*(f/max);
-    const div=document.createElement('div'); div.className='cell'+(hiMain.includes(n)?' sel':'');
-    div.style.background=`linear-gradient(180deg, rgba(0,255,240,${alpha*.3}), rgba(0,160,220,${alpha*.15}))`;
-    div.innerHTML=`<span>${n}</span><span class="cnt">${f}</span>`; host.appendChild(div);
-  }
-  const hostB=$('#mapBonus'); if(hostB) hostB.innerHTML='';
-  if(GAME.bonus?.enabled){
-    $('#bonusMapWrap').classList.remove('hidden');
-    const colsB=(GAME.bonus.to<=12)?6:10; $('#mapBonus').style.gridTemplateColumns=`repeat(${colsB}, minmax(0,1fr))`;
-    const maxB=Math.max(...freqBonus.slice(GAME.bonus.from))||1;
-    for(let b=GAME.bonus.from; b<=GAME.bonus.to; b++){
-      const f=freqBonus[b]||0; const alpha=0.1+0.9*(f/maxB);
-      const div=document.createElement('div'); div.className='cell'+(hiBonus.includes(b)?' sel':'');
-      div.style.background=`linear-gradient(180deg, rgba(255,225,0,${alpha*.25}), rgba(255,160,0,${alpha*.15}))`;
-      div.innerHTML=`<span>${b}</span><span class="cnt">${f}</span>`; $('#mapBonus').appendChild(div);
-    }
-  } else { $('#bonusMapWrap').classList.add('hidden'); }
-}
-
-/* ======================== Downloader & Fallbacks ========================= */
+const reDMY=/(\b\d{1,2})[.\-\/]([0-1]?\d)[.\-\/]([12]?\d{3})\b/; const reYMD=/(\b[12]\d{3})[.\-\/]([0-1]?\d)[.\-\/]([0-3]?\d)\b/;
+function takeDateAnywhere(line){ let m=line.match(reDMY); if(m){ return {date: iso(+m[3],+m[2],+m[1]), tail: line.slice(m.index+m[0].length)}; } m=line.match(reYMD); if(m){ return {date: iso(+m[1],+m[2],+m[3]), tail: line.slice(m.index+m[0].length)}; } return null; }
+function numbersFromTail(tail){ return tail.replace(/[A-Za-z]+/g,' ').split(/[^0-9]+/).filter(Boolean).map(x=>+x); }
+function parseLZ(txt){ draws=[]; freqMain=Array(50).fill(0); freqBonus=Array(10).fill(0); const lines=normalize(txt).split('\n').map(l=>l.trim()).filter(Boolean); for(const line of lines){ const dn=takeDateAnywhere(line); if(!dn) continue; const nums=numbersFromTail(dn.tail); let i=0; while(i<nums.length){ const main=[]; let j=i; while(j<nums.length && main.length<6){ const n=nums[j]; if(1<=n&&n<=49) main.push(n); j++; } if(main.length===6){ if(j<nums.length && 1<=nums[j]&&nums[j]<=49) j++; while(j<nums.length && 0<=nums[j]&&nums[j]<=9){ freqBonus[nums[j]]++; j++; } main.sort((a,b)=>a-b); draws.push({date:dn.date, main}); main.forEach(n=>freqMain[n]++); i=j; } else break; } } if(!draws.length) throw new Error('Keine gültigen Ziehungen (6aus49) erkannt.'); }
+function parseEJ(txt){ draws=[]; freqMain=Array(51).fill(0); freqBonus=Array(13).fill(0); const lines=normalize(txt).split('\n').map(l=>l.trim()).filter(Boolean); for(const line of lines){ const dn=takeDateAnywhere(line); if(!dn) continue; const nums=numbersFromTail(dn.tail); let i=0; while(i<nums.length){ const main=[]; let j=i; while(j<nums.length && main.length<5){ const n=nums[j]; if(1<=n&&n<=50) main.push(n); j++; } if(main.length===5){ let bonus=[]; while(j<nums.length && bonus.length<2){ const b=nums[j]; if(1<=b&&b<=12) bonus.push(b); j++; } main.sort((a,b)=>a-b); bonus.sort((a,b)=>a-b); draws.push({date:dn.date, main, bonus}); main.forEach(n=>freqMain[n]++); bonus.forEach(b=>freqBonus[b]++); i=j; } else break; } } if(!draws.length) throw new Error('Keine gültigen Ziehungen (Eurojackpot) erkannt.'); }
+function parseKE(txt){ draws=[]; freqMain=Array(71).fill(0); freqBonus=[]; const lines=normalize(txt).split('\n').map(l=>l.trim()).filter(Boolean); for(const line of lines){ const dn=takeDateAnywhere(line); if(!dn) continue; const nums=numbersFromTail(dn.tail); const main=nums.filter(n=>1<=n&&n<=70).slice(0,20); if(main.length===20){ main.sort((a,b)=>a-b); draws.push({date:dn.date, main}); main.forEach(n=>freqMain[n]++); } } if(!draws.length) throw new Error('Keine gültigen Ziehungen (Keno) erkannt.'); }
+function parseArchiveText(txt,save=true){ try{ if(GAME.key==='lz') parseLZ(txt); else if(GAME.key==='ej') parseEJ(txt); else parseKE(txt); draws.sort((a,b)=>a.date.localeCompare(b.date)); setText('#kpiCount',draws.length); setText('#kpiFrom',draws[0].date); setText('#kpiTo',draws.at(-1).date); $('#statusText').textContent='Archiv geladen ✔'; buildMaps([],[]); if(save){ localStorage.setItem(lsKey('archive'), txt); localStorage.setItem(lsKey('lastdate'), draws.at(-1).date);} const now=new Date().toISOString().replace('T',' ').slice(0,16); localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now); return draws.at(-1).date; }catch(e){ $('#statusText').textContent='Fehler: '+e.message; return null; }}
+function buildMaps(hiMain=[],hiBonus=[]){ const host=$('#mapMain'); host.innerHTML=''; host.style.gridTemplateColumns=`repeat(10,minmax(0,1fr))`; const max=Math.max(...freqMain.slice(GAME.main.from))||1; for(let n=GAME.main.from;n<=GAME.main.to;n++){ const f=freqMain[n]||0; const alpha=0.1+0.9*(f/max); const div=document.createElement('div'); div.className='cell'+(hiMain.includes(n)?' sel':''); div.style.background=`linear-gradient(180deg, rgba(0,255,240,${alpha*.3}), rgba(0,160,220,${alpha*.15}))`; div.innerHTML=`<span>${n}</span><span class="cnt">${f}</span>`; host.appendChild(div);} const hostB=$('#mapBonus'); if(hostB) hostB.innerHTML=''; if(GAME.bonus?.enabled){ $('#bonusMapWrap').classList.remove('hidden'); const colsB=(GAME.bonus.to<=12)?6:10; $('#mapBonus').style.gridTemplateColumns=`repeat(${colsB},minmax(0,1fr))`; const maxB=Math.max(...freqBonus.slice(GAME.bonus.from))||1; for(let b=GAME.bonus.from;b<=GAME.bonus.to;b++){ const f=freqBonus[b]||0; const alpha=0.1+0.9*(f/maxB); const div=document.createElement('div'); div.className='cell'+(hiBonus.includes(b)?' sel':''); div.style.background=`linear-gradient(180deg, rgba(255,225,0,${alpha*.25}), rgba(255,160,0,${alpha*.15}))`; div.innerHTML=`<span>${b}</span><span class="cnt">${f}</span>`; $('#mapBonus').appendChild(div);} } else { $('#bonusMapWrap').classList.add('hidden'); }}
 async function ensureJSZip(){ return !!window.JSZip; }
-async function tryFetchProxies(url){
-  const candidates = [
-    {u:url, t:'direct'},
-    {u:'https://cors.isomorphic-git.org/'+url, t:'cors-proxy'},
-    {u:'https://api.allorigins.win/raw?url='+encodeURIComponent(url), t:'allorigins-raw'},
-    {u:'https://thingproxy.freeboard.io/fetch/'+url, t:'thingproxy'},
-    {u:'https://corsproxy.io/?'+encodeURIComponent(url), t:'corsproxy'}
-  ];
-  let lastErr=null;
-  for(const c of candidates){
-    try{
-      const res = await fetch(c.u, {cache:'no-store', mode:'cors', referrerPolicy:'no-referrer'});
-      if(!res.ok) throw new Error(`HTTP ${res.status}`);
-      const ct=(res.headers.get('content-type')||'').toLowerCase();
-      if(ct.includes('zip') || c.u.endsWith('.zip')){
-        if(!(await ensureJSZip())) throw new Error('JSZip nicht geladen');
-        const blob = await res.blob();
-        const zip = await JSZip.loadAsync(blob);
-        const files = Object.values(zip.files).filter(f=>/\.(txt|csv)$/i.test(f.name));
-        if(!files.length) throw new Error('ZIP ohne TXT/CSV-Inhalt');
-        let combined=''; for(const f of files){ combined += "\n" + await f.async('string'); }
-        return combined;
-      } else { return await res.text(); }
-    }catch(e){ lastErr = e; }
-  }
-  throw lastErr || new Error('Download fehlgeschlagen');
-}
-
-async function openNativeDownload(url){
-  window.open(url, '_blank', 'noopener,noreferrer');
-  $('#statusText').textContent='Direkter Download im neuen Tab gestartet. Bitte speichern und unten Datei auswählen – oder „Datei öffnen“ nutzen.';
-  $('#staleBanner').style.display='flex';
-}
-
-async function useFilePickerAndParse(){
-  if(!window.showOpenFilePicker){ alert('Dein Browser unterstützt den System-Dateidialog hier nicht. Benutze bitte „Datei auswählen“ oder Drag&Drop.'); return; }
-  try{
-    const [handle] = await showOpenFilePicker({
-      multiple:false,
-      types:[{ description:'Archive/Text', accept:{ 'application/zip':['.zip'], 'text/plain':['.txt','.csv'] } }]
-    });
-    const file = await handle.getFile();
-    await handleFiles([file]);
-  }catch(e){ /* cancelled */ }
-}
-
-async function handleFiles(fileList){
-  const files = Array.from(fileList||[]);
-  if(!files.length) return;
-  $('#fileName').textContent = files.map(f=>f.name).join(', ');
-  try{
-    let combined='';
-    for(const file of files){
-      if(file.name.toLowerCase().endsWith('.zip')){
-        const zip=await JSZip.loadAsync(file); const entries=Object.values(zip.files);
-        for(const f of entries){ if(/\.(txt|csv)$/i.test(f.name)){ combined += "\n" + await f.async('string'); } }
-      }else{ combined += "\n" + await file.text(); }
-    }
-    const latest=parseArchiveText(combined,true);
-    if(latest){
-      localStorage.setItem(lsKey('lastdate'), latest);
-      const now=new Date().toISOString().replace('T',' ').slice(0,16);
-      localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now);
-    }
-  }catch(err){
-    $('#statusText').textContent='Fehler: '+err.message;
-  }
-}
-
-async function loadLatestAndDetect(){
-  const url=$('#archiveUrl').value.trim();
-  $('#updateBanner').style.display='none'; $('#staleBanner').style.display='none';
-  if(!url){ $('#statusText').textContent='Keine URL gesetzt. Bitte manuell laden.'; return; }
-  $('#statusText').textContent='Online-Archiv wird geprüft…';
-  try{
-    const raw=await tryFetchProxies(url);
-    const latest=parseArchiveText(raw,true);
-    const lastSeen=localStorage.getItem(lsKey('lastdate'));
-    if(latest){
-      const newDetected=(!lastSeen || latest > lastSeen);
-      if(newDetected){ $('#newDrawDate').textContent=latest; $('#updateBanner').style.display='flex'; }
-      const now=new Date().toISOString().replace('T',' ').slice(0,16);
-      localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now);
-    }
-  }catch(e){
-    await openNativeDownload(url);
-  }
-}
-
-/* ============================ Generator/Analyse =========================== */
-function setCounterEl(el, val, total){ el.textContent = `${val}/${total}`; el.classList.toggle('green', val===total); el.classList.toggle('red', val!==total); }
-function updateGroupCounters(){
-  let sumG=0; $$('#groupControls select').forEach(s=>{ const v=+s.value||0; sumG+=v; s.parentElement.lastChild.textContent=v; });
-  const need = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  setCounterEl($('#mainCounter'), sumG, need);
-  if(GAME.bonus?.enabled){
-    let sumB=0; $$('#bonusControls select').forEach(s=>{ const v=+s.value||0; sumB+=v; s.parentElement.lastChild.textContent=v; });
-    setCounterEl($('#bonusCounter'), sumB, GAME.bonus.pick);
-  }
-  const err=$('#groupError'); err.classList.add('hidden'); err.textContent='';
-  if(sumG!==need){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${need} Hauptzahlen wählen.`; }
-  if(GAME.bonus?.enabled){
-    let sumB=0; $$('#bonusControls select').forEach(s=> sumB+= (+s.value||0));
-    if(sumB!==GAME.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${GAME.bonus.pick} ${GAME.bonus.label} wählen.`; }
-  }
-}
-
-function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j]];} return a; }
-function pickFromRange(from,to,avoid,count,weightFn){
-  const bag=[]; for(let n=from;n<=to;n++){ if(!avoid.includes(n)){ const w=Math.max(1, weightFn?weightFn(n):1); for(let k=0;k<w;k++) bag.push(n);} }
-  shuffle(bag);
-  const res=[]; for(const v of bag){ if(!res.includes(v)){ res.push(v); if(res.length===count) break; } }
-  for(let n=from; res.length<count && n<=to; n++){ if(!res.includes(n) && !avoid.includes(n)) res.push(n); }
-  return res;
-}
+async function tryFetchProxies(url){ const candidates=[{u:url,t:'direct'},{u:'https://cors.isomorphic-git.org/'+url,t:'cors-proxy'},{u:'https://api.allorigins.win/raw?url='+encodeURIComponent(url),t:'allorigins-raw'},{u:'https://thingproxy.freeboard.io/fetch/'+url,t:'thingproxy'},{u:'https://corsproxy.io/?'+encodeURIComponent(url),t:'corsproxy'}]; let lastErr=null; for(const c of candidates){ try{ const res=await fetch(c.u,{cache:'no-store',mode:'cors',referrerPolicy:'no-referrer'}); if(!res.ok) throw new Error(`HTTP ${res.status}`); const ct=(res.headers.get('content-type')||'').toLowerCase(); if(ct.includes('zip')||c.u.endsWith('.zip')){ if(!(await ensureJSZip())) throw new Error('JSZip nicht geladen'); const blob=await res.blob(); const zip=await JSZip.loadAsync(blob); const files=Object.values(zip.files).filter(f=>/\.(txt|csv)$/i.test(f.name)); if(!files.length) throw new Error('ZIP ohne TXT/CSV-Inhalt'); let combined=''; for(const f of files){ combined+="\n"+await f.async('string'); } return combined; } else { return await res.text(); } }catch(e){ lastErr=e; } } throw lastErr||new Error('Download fehlgeschlagen'); }
+async function openNativeDownload(url){ window.open(url,'_blank','noopener,noreferrer'); $('#statusText').textContent='Direkter Download im neuen Tab gestartet. Bitte speichern und unten Datei auswählen – oder „Datei öffnen“ nutzen.'; $('#staleBanner').style.display='flex'; }
+async function useFilePickerAndParse(){ if(!window.showOpenFilePicker){ alert('Dein Browser unterstützt den System-Dateidialog hier nicht. Benutze bitte „Datei auswählen“ oder Drag&Drop.'); return; } try{ const [handle]=await showOpenFilePicker({multiple:false,types:[{description:'Archive/Text',accept:{'application/zip':['.zip'],'text/plain':['.txt','.csv']}}]}); const file=await handle.getFile(); await handleFiles([file]); }catch(e){} }
+async function handleFiles(fileList){ const files=Array.from(fileList||[]); if(!files.length) return; $('#fileName').textContent=files.map(f=>f.name).join(', '); try{ let combined=''; for(const file of files){ if(file.name.toLowerCase().endsWith('.zip')){ const zip=await JSZip.loadAsync(file); const entries=Object.values(zip.files); for(const f of entries){ if(/\.(txt|csv)$/i.test(f.name)){ combined+="\n"+await f.async('string'); } } } else { combined+="\n"+await file.text(); } } const latest=parseArchiveText(combined,true); if(latest){ localStorage.setItem(lsKey('lastdate'),latest); const now=new Date().toISOString().replace('T',' ').slice(0,16); localStorage.setItem(lsKey('lastcheck'),now); setText('#kpiFresh',now);} }catch(err){ $('#statusText').textContent='Fehler: '+err.message; } }
+async function loadLatestAndDetect(){ const url=$('#archiveUrl').value.trim(); $('#updateBanner').style.display='none'; $('#staleBanner').style.display='none'; if(!url){ $('#statusText').textContent='Keine URL gesetzt. Bitte manuell laden.'; return; } $('#statusText').textContent='Online-Archiv wird geprüft…'; try{ const raw=await tryFetchProxies(url); const latest=parseArchiveText(raw,true); const lastSeen=localStorage.getItem(lsKey('lastdate')); if(latest){ const newDetected=(!lastSeen||latest>lastSeen); if(newDetected){ $('#newDrawDate').textContent=latest; $('#updateBanner').style.display='flex'; } const now=new Date().toISOString().replace('T',' ').slice(0,16); localStorage.setItem(lsKey('lastcheck'),now); setText('#kpiFresh',now);} }catch(e){ await openNativeDownload(url);} }
+function setCounterEl(el,val,total){ el.textContent=`${val}/${total}`; el.classList.toggle('green',val===total); el.classList.toggle('red',val!==total); }
+function updateGroupCounters(){ let sumG=0; $$('#groupControls select').forEach(s=>{ const v=+s.value||0; sumG+=v; s.parentElement.lastChild.textContent=v; }); const need=(GAME.key==='ke')?(+($('#kenoType').value||10)):GAME.main.pick; setCounterEl($('#mainCounter'),sumG,need); if(GAME.bonus?.enabled){ let sumB=0; $$('#bonusControls select').forEach(s=>{ const v=+s.value||0; sumB+=v; s.parentElement.lastChild.textContent=v; }); setCounterEl($('#bonusCounter'),sumB,GAME.bonus.pick);} const err=$('#groupError'); err.classList.add('hidden'); err.textContent=''; if(sumG!==need){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${need} Hauptzahlen wählen.`;} if(GAME.bonus?.enabled){ let sumB=0; $$('#bonusControls select').forEach(s=> sumB+=(+s.value||0)); if(sumB!==GAME.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${GAME.bonus.pick} ${GAME.bonus.label} wählen.`; } } }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j]]; } return a;}
+function pickFromRange(from,to,avoid,count,weightFn){ const bag=[]; for(let n=from;n<=to;n++){ if(!avoid.includes(n)){ const w=Math.max(1,weightFn?weightFn(n):1); for(let k=0;k<w;k++) bag.push(n);} } shuffle(bag); const res=[]; for(const v of bag){ if(!res.includes(v)){ res.push(v); if(res.length===count) break; } } for(let n=from; res.length<count&&n<=to; n++){ if(!res.includes(n)&&!avoid.includes(n)) res.push(n);} return res;}
 function weightMain(n){ const max=Math.max(...freqMain.slice(GAME.main.from))||1; return 1+Math.round(3*((freqMain[n]||0)/max)); }
 function weightBonus(n){ const max=Math.max(...freqBonus.slice(GAME.bonus?.from||0))||1; return 1+Math.round(3*((freqBonus[n]||0)/max)); }
-
-function generateOne(){
-  const needMain = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  const wantMain = $$('#groupControls select').map(s=>+s.value||0);
-  const sumMain = wantMain.reduce((a,b)=>a+b,0);
-  const err=$('#groupError'); err.classList.add('hidden'); err.textContent='';
-  if(sumMain!==needMain){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${needMain} Hauptzahlen wählen.`; throw new Error('Gruppen unvollständig'); }
-  let main=[]; GAME.main.groups.forEach((g,i)=>{ const need=wantMain[i]; if(need>0){ main.push(...pickFromRange(g.from, g.to, main, need, weightMain)); } });
-  main = Array.from(new Set(main)).sort((a,b)=>a-b).slice(0,needMain);
-  let bonus=[];
-  if(GAME.bonus?.enabled){
-    const wantB = $$('#bonusControls select').map(s=>+s.value||0);
-    const sumB = wantB.reduce((a,b)=>a+b,0);
-    if(sumB!==GAME.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${GAME.bonus.pick} ${GAME.bonus.label} wählen.`; throw new Error('Bonus-Gruppen unvollständig'); }
-    GAME.bonus.groups.forEach((g,i)=>{ const need=wantB[i]; if(need>0){ bonus.push(...pickFromRange(g.from, g.to, bonus, need, weightBonus)); } });
-    bonus = Array.from(new Set(bonus)).sort((a,b)=>a-b).slice(0, GAME.bonus.pick);
-  }
-  return {main, bonus};
-}
-
-function analyseVariant(tip){
-  let hitsDist = {};
-  for(const d of draws){
-    const m = tip.main.filter(x=> d.main.includes(x)).length;
-    hitsDist[m] = (hitsDist[m]||0) + 1;
-  }
-  const maxHits = Math.max(...Object.keys(hitsDist).map(Number).concat([0]));
-  return {hitsDist, maxHits};
-}
-
-function tipCard(idx, tip){
-  const a=analyseVariant(tip);
-  const card=document.createElement('div'); card.className='glass mb-3';
-  const label = tip.main.map(n=>`<span class="chip">${n}</span>`).join('') + (tip.bonus&&tip.bonus.length?('<span class="badge ml-2">Bonus</span>'+tip.bonus.map(n=>`<span class="chip bonus">${n}</span>`).join('')):'');
-  const dist = Object.keys(a.hitsDist).sort((x,y)=>+y-+x).slice(0,6).map(k=>`<span class="badge">${k} Treffer: <b>${a.hitsDist[k]}</b></span>`).join(' ');
-  card.innerHTML = `
-    <div class="flex items-center justify-between flex-wrap gap-2">
-      <div>${label}</div>
-      <span class="badge">#${idx} • ${GAME.name}</span>
-    </div>
-    <div class="mt-2 flex gap-2 flex-wrap text-sm">${dist || '<span class="badge">keine Treffer</span>'}</div>
-    <div class="mt-2 flex gap-2 flex-wrap">
-      <button class="btn btn--gray copy-btn">📋 Kopieren</button>
-      <button class="btn btn--gray del-btn">🗑️ Entfernen</button>
-    </div>`;
-  card.querySelector('.copy-btn').onclick=()=> navigator.clipboard.writeText(`${tip.main.join('-')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join('-'):''}`);
-  card.querySelector('.del-btn').onclick=()=>{ card.remove(); generated=generated.filter(g=>g!==tip); };
-  return card;
-}
-
-/* ============================= Events ===================================== */
-function applyGame(){
-  $('#archiveUrl').value = GAME.url || '';
-  $('#directDl').href  = GAME.url || '#';
-  $('#kpiFormat').textContent = GAME.formatLabel;
-  $('#gameMeta').textContent = `${GAME.name}: Haupt ${GAME.main.from}–${GAME.main.to}` + (GAME.key==='ke' ? ' (Archiv: 20 Zahlen je Ziehung)' : '') + (GAME.bonus?.enabled? ` • ${GAME.bonus.label} ${GAME.bonus.from}–${GAME.bonus.to}`:'');
-
-  $('#kenoTypeWrap').classList.toggle('hidden', GAME.key!=='ke');
-
-  $('#groupControls').innerHTML='';
-  GAME.main.groups.forEach((g,i)=>{
-    const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
-    const maxSel = (GAME.key==='ke') ? 10 : GAME.main.pick; // pro Gruppe
-    const options = [...Array(maxSel+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join('');
-    row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`;
-    $('#groupControls').appendChild(row);
-  });
-  $$('#groupControls select').forEach(sel=> sel.addEventListener('change', updateGroupCounters));
-
-  $('#bonusControls').innerHTML='';
-  $('#bonusMapWrap').classList.toggle('hidden', !(GAME.bonus?.enabled));
-  $('#bonusCounter').style.display = (GAME.bonus?.enabled)? 'inline-block':'none';
-  if(GAME.bonus?.enabled){
-    GAME.bonus.groups.forEach((g,i)=>{
-      const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
-      const options = [...Array(GAME.bonus.pick+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join('');
-      row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded bonus" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`;
-      $('#bonusControls').appendChild(row);
-    });
-    $$('#bonusControls select').forEach(sel=> sel.addEventListener('change', updateGroupCounters));
-  }
-
-  const need = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  $('#needMain').textContent = need;
-
-  $('#mapMain').style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
-  if(GAME.bonus?.enabled){
-    const bCols=(GAME.bonus.to<=12)?6:10;
-    $('#mapBonus').style.gridTemplateColumns=`repeat(${bCols}, minmax(0,1fr))`;
-  }
-
-  draws=[]; freqMain = Array(GAME.main.to+1).fill(0); freqBonus= Array((GAME.bonus?.to??0)+1).fill(0); generated=[];
-  $('#diag').classList.add('hidden');
-  $('#statusText').textContent='Bitte Archiv laden (automatisch beim Öffnen)';
-  buildMaps([],[]); updateGroupCounters();
-  setTimeout(loadLatestAndDetect, 200);
-}
-$('#gameSelect').addEventListener('change', e=>{ GAME=GAMES[e.target.value]; applyGame(); });
-$('#kenoType').addEventListener('change', updateGroupCounters);
-
-// Buttons
-$('#loadLatestBtn').addEventListener('click', loadLatestAndDetect);
-$('#forceDlBtn').addEventListener('click', async ()=>{ const url=$('#archiveUrl').value.trim(); try{ window.open(url, '_blank', 'noopener,noreferrer'); }catch(e){ alert('Direkt-Download nicht möglich: '+e.message); } });
-$('#openPickerBtn').addEventListener('click', useFilePickerAndParse);
-
-// File input
-$('#zipInput').addEventListener('change', async (e)=>{ await handleFiles(e.target.files); });
-
-// Drag & Drop
-const dz = document.getElementById('dropzone');
-['dragenter','dragover'].forEach(ev=> dz.addEventListener(ev, (e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add('hover'); }));
-['dragleave','drop'].forEach(ev=> dz.addEventListener(ev, (e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove('hover'); }));
-dz.addEventListener('drop', (e)=>{ const files = e.dataTransfer?.files || []; handleFiles(files); });
-
-// Paste
-$('#parsePasteBtn').addEventListener('click', ()=>{ const txt = $('#rawPaste').value || ''; if(!txt.trim()){ alert('Bitte zuerst Text einfügen.'); return; } parseArchiveText(txt,true); });
-$('#clearPasteBtn').addEventListener('click', ()=>{ $('#rawPaste').value=''; });
-
-// Generator & Analyse
-$('#generateBtn').addEventListener('click', ()=>{
-  if(!draws.length){ alert('Bitte zuerst ein Archiv laden.'); return; }
-  const total= +$('#kombis').value || 1; $('#liveOutput').textContent=''; $('#cards').innerHTML=''; generated=[]; const seen=new Set();
-  for(let i=1;i<=total;i++){
-    try{
-      let tip = generateOne();
-      let key = tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x');
-      let guard=0; while(seen.has(key) && guard<12){ tip = generateOne(); key=tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x'); guard++; }
-      seen.add(key); generated.push(tip);
-      const out=$('#liveOutput'); out.textContent += `#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join(' ') : ''}\n`; out.scrollTop=out.scrollHeight;
-      buildMaps(tip.main, tip.bonus||[]);
-      $('#cards').appendChild(tipCard(i, tip));
-    }catch(e){ const err=$('#groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; }
-  }
-});
-$('#clearGeneratedBtn').addEventListener('click', ()=>{ generated=[]; $('#cards').innerHTML=''; $('#liveOutput').textContent=''; buildMaps([],[]); });
-$('#analyseAllBtn').addEventListener('click', ()=>{
-  if(!generated.length){ alert('Bitte zuerst Varianten generieren.'); return; }
-  let html = `<div class="glass mt-2"><div class="font-bold mb-2">Auswertung – ${GAME.name}</div>`;
-  html += '<div class="overflow-auto"><table class="text-sm min-w-full"><thead><tr>';
-  html += '<th class="px-2 py-1 text-left">#</th><th class="px-2 py-1 text-left">Kombi</th><th class="px-2 py-1">Beste Trefferzahl</th><th class="px-2 py-1">Verteilung (Top)</th>';
-  html += '</tr></thead><tbody>';
-  generated.forEach((t,i)=>{
-    const a=analyseVariant(t);
-    const label = t.main.join(' ')+(t.bonus&&t.bonus.length? ' | Bonus: '+t.bonus.join(' '):'');
-    const dist = Object.keys(a.hitsDist).sort((x,y)=>+y-+x).slice(0,6).map(k=>`${k}:${a.hitsDist[k]}`).join(', ');
-    html += `<tr class="border-t border-white/10">
-      <td class="px-2 py-1">${i+1}</td>
-      <td class="px-2 py-1">${label}</td>
-      <td class="px-2 py-1 text-center">${a.maxHits}</td>
-      <td class="px-2 py-1">${dist}</td>
-    </tr>`;
-  });
-  html += '</tbody></table></div></div>'; $('#analysisBox').innerHTML=html;
-});
-
+function generateOne(){ const needMain=(GAME.key==='ke')?(+($('#kenoType').value||10)):GAME.main.pick; const wantMain=$$('#groupControls select').map(s=>+s.value||0); const sumMain=wantMain.reduce((a,b)=>a+b,0); const err=$('#groupError'); err.classList.add('hidden'); err.textContent=''; if(sumMain!==needMain){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${needMain} Hauptzahlen wählen.`; throw new Error('Gruppen unvollständig'); } let main=[]; GAME.main.groups.forEach((g,i)=>{ const need=wantMain[i]; if(need>0){ main.push(...pickFromRange(g.from,g.to,main,need,weightMain)); } }); main=Array.from(new Set(main)).sort((a,b)=>a-b).slice(0,needMain); let bonus=[]; if(GAME.bonus?.enabled){ const wantB=$$('#bonusControls select').map(s=>+s.value||0); const sumB=wantB.reduce((a,b)=>a+b,0); if(sumB!==GAME.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${GAME.bonus.pick} ${GAME.bonus.label} wählen.`; throw new Error('Bonus-Gruppen unvollständig'); } GAME.bonus.groups.forEach((g,i)=>{ const need=wantB[i]; if(need>0){ bonus.push(...pickFromRange(g.from,g.to,bonus,need,weightBonus)); } }); bonus=Array.from(new Set(bonus)).sort((a,b)=>a-b).slice(0,GAME.bonus.pick);} return {main,bonus}; }
+function analyseVariant(tip){ let hitsDist={}; for(const d of draws){ const m=tip.main.filter(x=>d.main.includes(x)).length; hitsDist[m]=(hitsDist[m]||0)+1; } const maxHits=Math.max(...Object.keys(hitsDist).map(Number).concat([0])); return {hitsDist,maxHits}; }
+function tipCard(idx,tip){ const a=analyseVariant(tip); const card=document.createElement('div'); card.className='glass mb-3'; const label=tip.main.map(n=>`<span class="chip">${n}</span>`).join('')+(tip.bonus&&tip.bonus.length?('<span class="badge ml-2">Bonus</span>'+tip.bonus.map(n=>`<span class="chip bonus">${n}</span>`).join('')):''); const dist=Object.keys(a.hitsDist).sort((x,y)=>+y-+x).slice(0,6).map(k=>`<span class="badge">${k} Treffer: <b>${a.hitsDist[k]}</b></span>`).join(' '); card.innerHTML=`<div class="flex items-center justify-between flex-wrap gap-2"><div>${label}</div><span class="badge">#${idx} • ${GAME.name}</span></div><div class="mt-2 flex gap-2 flex-wrap text-sm">${dist || '<span class="badge">keine Treffer</span>'}</div><div class="mt-2 flex gap-2 flex-wrap"><button class="btn btn--gray copy-btn">📋 Kopieren</button><button class="btn btn--gray del-btn">🗑️ Entfernen</button></div>`; card.querySelector('.copy-btn').onclick=()=>navigator.clipboard.writeText(`${tip.main.join('-')}${(tip.bonus&&tip.bonus.length)?' | Bonus: '+tip.bonus.join('-'):''}`); card.querySelector('.del-btn').onclick=()=>{ card.remove(); generated=generated.filter(g=>g!==tip); }; return card; }
+function applyGame(){ localStorage.setItem('lastGame', GAME.key); $('#archiveUrl').value=GAME.url||''; $('#directDl').href=GAME.url||'#'; $('#kpiFormat').textContent=GAME.formatLabel; $('#gameMeta').textContent=`${GAME.name}: Haupt ${GAME.main.from}–${GAME.main.to}`+(GAME.key==='ke'?' (Archiv: 20 Zahlen je Ziehung)':'')+(GAME.bonus?.enabled?` • ${GAME.bonus.label} ${GAME.bonus.from}–${GAME.bonus.to}`:''); $('#kenoTypeWrap').classList.toggle('hidden',GAME.key!=='ke'); $('#groupControls').innerHTML=''; GAME.main.groups.forEach((g,i)=>{ const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center'; const maxSel=(GAME.key==='ke')?10:GAME.main.pick; const options=[...Array(maxSel+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join(''); row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`; $('#groupControls').appendChild(row); }); $$('#groupControls select').forEach(sel=> sel.addEventListener('change',updateGroupCounters)); $('#bonusControls').innerHTML=''; $('#bonusMapWrap').classList.toggle('hidden',!(GAME.bonus?.enabled)); $('#bonusCounter').style.display=(GAME.bonus?.enabled)?'inline-block':'none'; if(GAME.bonus?.enabled){ GAME.bonus.groups.forEach((g,i)=>{ const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center'; const options=[...Array(GAME.bonus.pick+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join(''); row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded bonus" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`; $('#bonusControls').appendChild(row); }); $$('#bonusControls select').forEach(sel=> sel.addEventListener('change',updateGroupCounters)); } const need=(GAME.key==='ke')?(+($('#kenoType').value||10)):GAME.main.pick; $('#needMain').textContent=need; $('#mapMain').style.gridTemplateColumns=`repeat(10,minmax(0,1fr))`; if(GAME.bonus?.enabled){ const bCols=(GAME.bonus.to<=12)?6:10; $('#mapBonus').style.gridTemplateColumns=`repeat(${bCols},minmax(0,1fr))`; } draws=[]; freqMain=Array(GAME.main.to+1).fill(0); freqBonus=Array((GAME.bonus?.to??0)+1).fill(0); generated=[]; $('#diag').classList.add('hidden'); $('#statusText').textContent='Bitte Archiv laden (automatisch beim Öffnen)'; buildMaps([],[]); updateGroupCounters(); setTimeout(loadLatestAndDetect, 150); }
+$('#gameSelect').addEventListener('change',e=>{ GAME=GAMES[e.target.value]; applyGame(); });
+$('#kenoType').addEventListener('change',updateGroupCounters);
+$('#loadLatestBtn').addEventListener('click',loadLatestAndDetect);
+$('#forceDlBtn').addEventListener('click',async()=>{ const url=$('#archiveUrl').value.trim(); try{ window.open(url,'_blank','noopener,noreferrer'); }catch(e){ alert('Direkt-Download nicht möglich: '+e.message); } });
+$('#openPickerBtn').addEventListener('click',useFilePickerAndParse);
+$('#zipInput').addEventListener('change',async(e)=>{ await handleFiles(e.target.files); });
+const dz=document.getElementById('dropzone'); ['dragenter','dragover'].forEach(ev=> dz.addEventListener(ev,(e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add('hover'); })); ['dragleave','drop'].forEach(ev=> dz.addEventListener(ev,(e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove('hover'); })); dz.addEventListener('drop',(e)=>{ const files=e.dataTransfer?.files||[]; handleFiles(files); });
+$('#generateBtn').addEventListener('click',()=>{ if(!draws.length){ alert('Bitte zuerst ein Archiv laden.'); return; } const total=+$('#kombis').value||1; $('#liveOutput').textContent=''; $('#cards').innerHTML=''; generated=[]; const seen=new Set(); for(let i=1;i<=total;i++){ try{ let tip=generateOne(); let key=tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x'); let guard=0; while(seen.has(key)&&guard<12){ tip=generateOne(); key=tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x'); guard++; } seen.add(key); generated.push(tip); const out=$('#liveOutput'); out.textContent+=`#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)?' | Bonus: '+tip.bonus.join(' '):''}\n`; out.scrollTop=out.scrollHeight; buildMaps(tip.main,tip.bonus||[]); $('#cards').appendChild(tipCard(i,tip)); }catch(e){ const err=$('#groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; } } });
+$('#clearGeneratedBtn').addEventListener('click',()=>{ generated=[]; $('#cards').innerHTML=''; $('#liveOutput').textContent=''; buildMaps([],[]); });
+$('#analyseAllBtn').addEventListener('click',()=>{ if(!generated.length){ alert('Bitte zuerst Varianten generieren.'); return; } let html=`<div class="glass mt-2"><div class="font-bold mb-2">Auswertung – ${GAME.name}</div>`; html+='<div class="overflow-auto"><table class="text-sm min-w-full"><thead><tr>'; html+='<th class="px-2 py-1 text-left">#</th><th class="px-2 py-1 text-left">Kombi</th><th class="px-2 py-1">Beste Trefferzahl</th><th class="px-2 py-1">Verteilung (Top)</th>'; html+='</tr></thead><tbody>'; generated.forEach((t,i)=>{ const a=analyseVariant(t); const label=t.main.join(' ')+(t.bonus&&t.bonus.length?' | Bonus: '+t.bonus.join(' '):''); const dist=Object.keys(a.hitsDist).sort((x,y)=>+y-+x).slice(0,6).map(k=>`${k}:${a.hitsDist[k]}`).join(', '); html+=`<tr class="border-t border-white/10"><td class="px-2 py-1">${i+1}</td><td class="px-2 py-1">${label}</td><td class="px-2 py-1 text-center">${a.maxHits}</td><td class="px-2 py-1">${dist}</td></tr>`; }); html+='</tbody></table></div></div>'; $('#analysisBox').innerHTML=html; });
 (function init(){
-  GAME = GAMES[$('#gameSelect').value];
-  $('#mapMain').style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
-  applyGame();
+  // Restore last selected game
+  const lastGame = localStorage.getItem('lastGame');
+  if(lastGame && ['ke','ej','lz'].includes(lastGame)){ $('#gameSelect').value = lastGame; GAME = GAMES[lastGame]; }
+  else { GAME = GAMES[$('#gameSelect').value]; }
+  $('#mapMain').style.gridTemplateColumns=`repeat(10,minmax(0,1fr))`; applyGame();
   const last = localStorage.getItem(lsKey('lastcheck')); if(last) setText('#kpiFresh', last);
-})();
-</script>
+
+  // Re-check archive when tab regains focus (>= 30 min seit letztem Check)
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState==='visible'){
+      const lastCheck = localStorage.getItem(lsKey('lastcheck'));
+      if(lastCheck){
+        const now = Date.now();
+        const lastTs = new Date(lastCheck.replace(' ','T')).getTime();
+        if(!isNaN(lastTs) && (now - lastTs) > 30*60*1000){
+          loadLatestAndDetect();
+        }
+      }
+    }
+  });
+})();</script>
 </body>
 </html>
