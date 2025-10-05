@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v1.7)</title>
-
+<title>Multi Lottery Tool • Keno • Eurojackpot • Lotto 6aus49 (v1.9)</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script>
-// Fallback JSZip Loader (multi-CDN)
+// ===== JSZip Loader (multi-CDN) =====
 window.ensureJSZip = async function(){
   if(window.JSZip) return true;
   const cdns=[
@@ -21,7 +20,6 @@ window.ensureJSZip = async function(){
   return false;
 };
 </script>
-
 <style>
   :root{ --cy:#00fff0; --mag:#ff00ea; --ink:#eaf7ff; --bg:#060712; --ok:#39ff88; --bad:#ff6b94; --amber:#f59e0b; }
   body{background:radial-gradient(900px 700px at -10% -10%, rgba(0,255,240,.12), transparent 60%), radial-gradient(900px 700px at 110% -10%, rgba(255,0,234,.12), transparent 60%), var(--bg); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui;}
@@ -54,9 +52,8 @@ window.ensureJSZip = async function(){
 </head>
 <body class="p-5">
   <h1 class="title text-3xl md:text-4xl mb-2">🎛️ Multi Lottery Tool</h1>
-  <p class="opacity-80 mb-4">Keno • Eurojackpot • Lotto 6aus49 — Gruppen, Map, Generator, Analyse & Auto-Archiv (v1.7)</p>
+  <p class="opacity-80 mb-4"><b>Keno • Eurojackpot • Lotto 6aus49</b> — Gruppen, Map, Generator, Analyse & Auto-Archiv (v1.9)</p>
 
-  <!-- TABS -->
   <div class="glass mb-3">
     <div class="flex flex-wrap gap-2 items-center">
       <button class="tab" id="tab-ke">Keno</button>
@@ -66,7 +63,6 @@ window.ensureJSZip = async function(){
     </div>
   </div>
 
-  <!-- ARCHIVE -->
   <div class="glass mb-4" id="archivBox">
     <h2 class="text-xl font-bold mb-2">📂 Archiv</h2>
     <div id="updateBanner" class="banner banner--new"><span>🟢 Neue Ziehung erkannt:</span><b id="newDrawDate"></b></div>
@@ -81,7 +77,7 @@ window.ensureJSZip = async function(){
         <button type="button" id="saveZipBtn" class="btn btn--amber">⬇️ ZIP speichern</button>
         <a id="directDl" class="btn btn--gray" target="_blank" rel="noopener">🔗 Direktlink</a>
       </div>
-      <p class="text-xs opacity-80 mt-2">Reihenfolge: direkt → isomorphic‑git → allorigins → thingproxy → corsproxy. ZIP wird automatisch erkannt.</p>
+      <p class="text-xs opacity-80 mt-2">Reihenfolge: direkt → isomorphic‑git → allorigins → thingproxy → corsproxy. ZIP/ArrayBuffer‑Handling für maximale Stabilität.</p>
     </div>
 
     <div class="glass mb-3">
@@ -105,7 +101,6 @@ window.ensureJSZip = async function(){
     </div>
   </div>
 
-  <!-- GENERATOR -->
   <div class="glass mb-4" id="genBox">
     <h2 class="text-xl font-bold mb-2">⚡ Generieren (Gruppen‑Modus)</h2>
 
@@ -175,7 +170,6 @@ window.ensureJSZip = async function(){
     <div id="cards" class="mt-3"></div>
   </div>
 
-  <!-- ANALYSE -->
   <div class="glass" id="anaBox">
     <h2 class="text-xl font-bold mb-2">📊 Analyse</h2>
     <div id="analysisBox" class="mt-1 text-sm"></div>
@@ -197,29 +191,32 @@ const GAMES={
     bonus:{enabled:true,label:'Superzahl',from:0,to:9,pick:1,groups:[{label:'0–4',from:0,to:4},{label:'5–9',from:5,to:9}]}, formatLabel:'6 aus 49 (+ SZ)' }
 };
 
-let GAME='ej'; let draws=[]; let freqMain=[]; let freqBonus=[]; let generated=[];
+let GAME='lz'; // <-- Start mit 6aus49
+let draws=[]; let freqMain=[]; let freqBonus=[]; let generated=[];
 
 function lsKey(k){ return `${GAME}_${k}`; }
 function setText(sel,val){ const el=$(sel); if(el) el.textContent=val; }
-
 function iso(y,m,d){ const Y=(+y<100)?(2000+(+y)):(+y); const dt=new Date(Date.UTC(Y,+m-1,+d)); return isNaN(dt)? null : dt.toISOString().slice(0,10); }
-function normalize(s){ return s.replace(/\\uFEFF/g,'').replace(/\\r\\n?/g,'\\n'); }
-const reDMY = /(\\b\\d{1,2})[.\\-\\/]([0-1]?\\d)[.\\-\\/]([12]?\\d{3})\\b/;
-const reYMD = /(\\b[12]\\d{3})[.\\-\\/]([0-1]?\\d)[.\\-\\/]([0-3]?\\d)\\b/;
+function normalize(s){ return s.replace(/\uFEFF/g,'').replace(/\r\n?/g,'\n'); }
+const reDMY = /(\b\d{1,2})[.\-\/]([0-1]?\d)[.\-\/]([12]?\d{3})\b/;
+const reYMD = /(\b[12]\d{3})[.\-\/]([0-1]?\d)[.\-\/]([0-3]?\d)\b/;
 function takeDateAnywhere(line){ let m=line.match(reDMY); if(m){ return {date: iso(+m[3],+m[2],+m[1]), tail: line.slice(m.index+m[0].length)}; } m=line.match(reYMD); if(m){ return {date: iso(+m[1],+m[2],+m[3]), tail: line.slice(m.index+m[0].length)}; } return null; }
 function numbersFromTail(tail){ return tail.replace(/[A-Za-z]+/g,' ').split(/[^0-9]+/).filter(Boolean).map(x=>+x); }
 
 function parseLZ(txt){
   draws=[]; freqMain=Array(50).fill(0); freqBonus=Array(10).fill(0);
-  const lines = normalize(txt).split('\\n').map(l=>l.trim()).filter(Boolean);
+  const lines = normalize(txt).split('\n').map(l=>l.trim()).filter(Boolean);
   for(const line of lines){
-    const dn = takeDateAnywhere(line); if(!dn) continue; const nums = numbersFromTail(dn.tail);
+    const dn = takeDateAnywhere(line); if(!dn) continue;
+    const nums = numbersFromTail(dn.tail);
     let i=0; while(i<nums.length){
-      const main=[]; let j=i; while(j<nums.length && main.length<6){ const n=nums[j]; if(1<=n && n<=49) main.push(n); j++; }
+      const main=[]; let j=i;
+      while(j<nums.length && main.length<6){ const n=nums[j]; if(1<=n && n<=49) main.push(n); j++; }
       if(main.length===6){
         if(j<nums.length && 1<=nums[j] && nums[j]<=49) j++; // alte Zusatzzahl optional
         while(j<nums.length && 0<=nums[j] && nums[j]<=9){ freqBonus[nums[j]]++; j++; }
-        main.sort((a,b)=>a-b); draws.push({date:dn.date, main}); main.forEach(n=>freqMain[n]++); i=j;
+        main.sort((a,b)=>a-b); draws.push({date:dn.date, main}); main.forEach(n=>freqMain[n]++);
+        i=j;
       } else break;
     }
   }
@@ -227,7 +224,7 @@ function parseLZ(txt){
 }
 function parseEJ(txt){
   draws=[]; freqMain=Array(51).fill(0); freqBonus=Array(13).fill(0);
-  const lines = normalize(txt).split('\\n').map(l=>l.trim()).filter(Boolean);
+  const lines = normalize(txt).split('\n').map(l=>l.trim()).filter(Boolean);
   for(const line of lines){
     const dn = takeDateAnywhere(line); if(!dn) continue; const nums = numbersFromTail(dn.tail);
     let i=0; while(i<nums.length){
@@ -243,7 +240,7 @@ function parseEJ(txt){
 }
 function parseKE(txt){
   draws=[]; freqMain=Array(71).fill(0); freqBonus=[];
-  const lines = normalize(txt).split('\\n').map(l=>l.trim()).filter(Boolean);
+  const lines = normalize(txt).split('\n').map(l=>l.trim()).filter(Boolean);
   for(const line of lines){
     const dn=takeDateAnywhere(line); if(!dn) continue; const nums=numbersFromTail(dn.tail);
     const main=nums.filter(n=>1<=n&&n<=70).slice(0,20);
@@ -266,56 +263,44 @@ function parseArchiveText(txt, save=true){
   }catch(e){ $('#statusText').textContent='Fehler: '+e.message; return null; }
 }
 
-function buildMaps(hiMain=[], hiBonus=[]){
-  const g=GAMES[GAME];
-  const host=$('#mapMain'); host.innerHTML=''; host.style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
-  const max = Math.max(...freqMain.slice(g.main.from)) || 1;
-  for(let n=g.main.from; n<=g.main.to; n++){
-    const f=freqMain[n]||0; const alpha=0.1+0.9*(f/max);
-    const div=document.createElement('div'); div.className='cell'+(hiMain.includes(n)?' sel':'');
-    div.style.background=`linear-gradient(180deg, rgba(0,255,240,${alpha*.3}), rgba(0,160,220,${alpha*.15}))`;
-    div.innerHTML=`<span>${n}</span><span class="cnt">${f}</span>`; host.appendChild(div);
-  }
-  const hostB=$('#mapBonus'); if(hostB) hostB.innerHTML='';
-  const showBonus = (g.bonus?.enabled) && (GAME!=='lz' || $('#useSuperzahl').checked);
-  if(showBonus){
-    $('#bonusMapWrap').classList.remove('hidden');
-    const colsB=(g.bonus.to<=12)?6:10; $('#mapBonus').style.gridTemplateColumns=`repeat(${colsB}, minmax(0,1fr))`;
-    const maxB=Math.max(...freqBonus.slice(g.bonus.from))||1;
-    for(let b=g.bonus.from; b<=g.bonus.to; b++){
-      const f=freqBonus[b]||0; const alpha=0.1+0.9*(f/maxB);
-      const div=document.createElement('div'); div.className='cell'+(hiBonus.includes(b)?' sel':'');
-      div.style.background=`linear-gradient(180deg, rgba(255,225,0,${alpha*.25}), rgba(255,160,0,${alpha*.15}))`;
-      div.innerHTML=`<span>${b}</span><span class="cnt">${f}</span>`; $('#mapBonus').appendChild(div);
-    }
-  } else { $('#bonusMapWrap').classList.add('hidden'); }
-}
-
+// ===== Robust fetch using ArrayBuffer & ZIP signature detection =====
+function isZip(buf){ if(!buf || buf.byteLength<4) return false; const v=new Uint8Array(buf); return v[0]===0x50 && v[1]===0x4B && (v[2]===0x03||v[2]===0x05||v[2]===0x07) && (v[3]===0x04||v[3]===0x06||v[3]===0x08); }
+async function fetchArrayBuffer(u){ const res=await fetch(u,{cache:'no-store',mode:'cors',referrerPolicy:'no-referrer'}); if(!res.ok) throw new Error('HTTP '+res.status); return {buf: await res.arrayBuffer(), headers: res.headers}; }
 async function fetchWithProxies(url){
   const trials=[ url, 'https://cors.isomorphic-git.org/'+url, 'https://api.allorigins.win/raw?url='+encodeURIComponent(url), 'https://thingproxy.freeboard.io/fetch/'+url, 'https://corsproxy.io/?'+encodeURIComponent(url) ];
   let last=null;
   for(const u of trials){
     try{
-      const res=await fetch(u, {cache:'no-store'}); if(!res.ok) throw new Error('HTTP '+res.status);
-      const ct=(res.headers.get('content-type')||'').toLowerCase();
-      if(ct.includes('zip') || u.endsWith('.zip')){
+      const {buf, headers}=await fetchArrayBuffer(u);
+      const td=new TextDecoder('utf-8');
+      const ct=(headers.get('content-type')||'').toLowerCase();
+      if(isZip(buf) || ct.includes('zip') || u.endsWith('.zip')){
         const ok=await window.ensureJSZip(); if(!ok) throw new Error('JSZip nicht verfügbar');
-        const blob=await res.blob(); const zip=await JSZip.loadAsync(blob); const files=Object.values(zip.files).filter(f=>/\.(txt|csv)$/i.test(f.name));
+        const zip=await JSZip.loadAsync(buf); const files=Object.values(zip.files).filter(f=>/\.(txt|csv)$/i.test(f.name));
         if(!files.length) throw new Error('ZIP ohne TXT/CSV-Inhalt');
         let combined=''; for(const f of files){ combined += "\n" + await f.async('string'); }
         return combined;
-      } else { return await res.text(); }
+      } else {
+        return td.decode(buf);
+      }
     }catch(e){ last=e; }
   }
-  throw last || new Error('Download fehlgeschlagen');
+  throw last||new Error('Download fehlgeschlagen');
 }
-
 async function forceDownloadZip(url, filename){
   const trials=['https://cors.isomorphic-git.org/'+url,'https://api.allorigins.win/raw?url='+encodeURIComponent(url),'https://thingproxy.freeboard.io/fetch/'+url,'https://corsproxy.io/?'+encodeURIComponent(url),url];
-  let last=null; for(const u of trials){ try{ const res=await fetch(u); if(!res.ok) throw new Error('HTTP '+res.status); const blob=await res.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); return; }catch(e){ last=e; } }
+  let last=null;
+  for(const u of trials){
+    try{
+      const {buf}=await fetchArrayBuffer(u);
+      const blob=new Blob([buf],{type:'application/octet-stream'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); return;
+    }catch(e){ last=e; }
+  }
   alert('Direkt-Download nicht möglich: '+(last?.message||'Unbekannt'));
 }
 
+// Files (drag&drop / input)
 async function handleFiles(fileList){
   const files = Array.from(fileList||[]); if(!files.length) return;
   $('#fileName').textContent = files.map(f=>f.name).join(', ');
@@ -347,10 +332,16 @@ function updateGroupCounters(){
   let sumG=0; $$('#groupControls select').forEach(s=>{ const v=+s.value||0; sumG+=v; s.parentElement.lastChild.textContent=v; });
   const need = (GAME==='ke') ? (+($('#kenoType').value||10)) : g.main.pick;
   setCounterEl($('#mainCounter'), sumG, need);
-  if(g.bonus?.enabled && (GAME!=='lz' || $('#useSuperzahl').checked)){ let sumB=0; $$('#bonusControls select').forEach(s=>{ const v=+s.value||0; sumB+=v; s.parentElement.lastChild.textContent=v; }); setCounterEl($('#bonusCounter'), sumB, g.bonus.pick); }
+  if(g.bonus?.enabled && (GAME!=='lz' || $('#useSuperzahl').checked)){
+    let sumB=0; $$('#bonusControls select').forEach(s=>{ const v=+s.value||0; sumB+=v; s.parentElement.lastChild.textContent=v; });
+    setCounterEl($('#bonusCounter'), sumB, g.bonus.pick);
+  }
   const err=$('#groupError'); err.classList.add('hidden'); err.textContent='';
   if(sumG!==need){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${need} Hauptzahlen wählen.`; }
-  if(g.bonus?.enabled && (GAME!=='lz' || $('#useSuperzahl').checked)){ let sumB=0; $$('#bonusControls select').forEach(s=> sumB+= (+s.value||0)); if(sumB!==g.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${g.bonus.pick} ${g.bonus.label} wählen.`; } }
+  if(g.bonus?.enabled && (GAME!=='lz' || $('#useSuperzahl').checked)){
+    let sumB=0; $$('#bonusControls select').forEach(s=> sumB+= (+s.value||0));
+    if(sumB!==g.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${g.bonus.pick} ${g.bonus.label} wählen.`; }
+  }
 }
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j]];} return a; }
@@ -369,10 +360,15 @@ function generateOne(){
   main = Array.from(new Set(main)).sort((a,b)=>a-b).slice(0,needMain);
   let bonus=[];
   const needBonusActive = (g.bonus?.enabled) && (GAME!=='lz' || $('#useSuperzahl').checked);
-  if(needBonusActive){ const wantB = $$('#bonusControls select').map(s=>+s.value||0); const sumB = wantB.reduce((a,b)=>a+b,0); if(sumB!==g.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${g.bonus.pick} ${g.bonus.label} wählen.`; throw new Error('Bonus-Gruppen unvollständig'); }
-    g.bonus.groups.forEach((r,i)=>{ const need=wantB[i]; if(need>0){ bonus.push(...pickFromRange(r.from, r.to, bonus, need, weightBonus)); } }); bonus = Array.from(new Set(bonus)).sort((a,b)=>a-b).slice(0, g.bonus.pick); }
-  return {main, bonus}; }
-
+  if(needBonusActive){
+    const wantB = $$('#bonusControls select').map(s=>+s.value||0);
+    const sumB = wantB.reduce((a,b)=>a+b,0);
+    if(sumB!==g.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${g.bonus.pick} ${g.bonus.label} wählen.`; throw new Error('Bonus-Gruppen unvollständig'); }
+    g.bonus.groups.forEach((r,i)=>{ const need=wantB[i]; if(need>0){ bonus.push(...pickFromRange(r.from, r.to, bonus, need, weightBonus)); } });
+    bonus = Array.from(new Set(bonus)).sort((a,b)=>a-b).slice(0, g.bonus.pick);
+  }
+  return {main, bonus};
+}
 function analyseVariant(tip){ let hitsDist = {}; for(const d of draws){ const m = tip.main.filter(x=> d.main.includes(x)).length; hitsDist[m] = (hitsDist[m]||0) + 1; } const maxHits = Math.max(...Object.keys(hitsDist).map(Number).concat([0])); return {hitsDist, maxHits}; }
 function tipCard(idx, tip){ const a=analyseVariant(tip); const card=document.createElement('div'); card.className='glass mb-3'; const label = tip.main.map(n=>`<span class="chip">${n}</span>`).join('') + (tip.bonus&&tip.bonus.length?('<span class="badge ml-2">Bonus</span>'+tip.bonus.map(n=>`<span class="chip bonus">${n}</span>`).join('')):''); const dist = Object.keys(a.hitsDist).sort((x,y)=>+y-+x).slice(0,6).map(k=>`<span class="badge">${k} Treffer: <b>${a.hitsDist[k]}</b></span>`).join(' '); card.innerHTML = `
     <div class="flex items-center justify-between flex-wrap gap-2"> <div>${label}</div> <span class="badge">#${idx} • ${GAMES[GAME].name}</span> </div>
@@ -381,6 +377,31 @@ function tipCard(idx, tip){ const a=analyseVariant(tip); const card=document.cre
   card.querySelector('.copy-btn').onclick=()=> navigator.clipboard.writeText(`${tip.main.join('-')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join('-'):''}`);
   card.querySelector('.del-btn').onclick=()=>{ card.remove(); generated=generated.filter(g=>g!==tip); };
   return card; }
+
+function buildMaps(hiMain=[], hiBonus=[]){
+  const g=GAMES[GAME];
+  const host=$('#mapMain'); host.innerHTML=''; host.style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
+  const max = Math.max(...freqMain.slice(g.main.from)) || 1;
+  for(let n=g.main.from; n<=g.main.to; n++){
+    const f=freqMain[n]||0; const alpha=0.1+0.9*(f/max);
+    const div=document.createElement('div'); div.className='cell'+(hiMain.includes(n)?' sel':'');
+    div.style.background=`linear-gradient(180deg, rgba(0,255,240,${alpha*.3}), rgba(0,160,220,${alpha*.15}))`;
+    div.innerHTML=`<span>${n}</span><span class="cnt">${f}</span>`; host.appendChild(div);
+  }
+  const hostB=$('#mapBonus'); if(hostB) hostB.innerHTML='';
+  const showBonus = (g.bonus?.enabled) && (GAME!=='lz' || $('#useSuperzahl').checked);
+  if(showBonus){
+    $('#bonusMapWrap').classList.remove('hidden');
+    const colsB=(g.bonus.to<=12)?6:10; $('#mapBonus').style.gridTemplateColumns=`repeat(${colsB}, minmax(0,1fr))`;
+    const maxB=Math.max(...freqBonus.slice(g.bonus.from))||1;
+    for(let b=g.bonus.from; b<=g.bonus.to; b++){
+      const f=freqBonus[b]||0; const alpha=0.1+0.9*(f/maxB);
+      const div=document.createElement('div'); div.className='cell'+(hiBonus.includes(b)?' sel':'');
+      div.style.background=`linear-gradient(180deg, rgba(255,225,0,${alpha*.25}), rgba(255,160,0,${alpha*.15}))`;
+      div.innerHTML=`<span>${b}</span><span class="cnt">${f}</span>`; $('#mapBonus').appendChild(div);
+    }
+  } else { $('#bonusMapWrap').classList.add('hidden'); }
+}
 
 function applyGame(){
   localStorage.setItem('lastGame', GAME);
@@ -396,7 +417,7 @@ function applyGame(){
   $('#kenoTypeWrap').classList.toggle('hidden', GAME!=='ke');
   $('#szWrap').classList.toggle('hidden', GAME!=='lz');
 
-  // build group selectors
+  // Group selectors
   $('#groupControls').innerHTML='';
   g.main.groups.forEach((r,i)=>{
     const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
@@ -425,16 +446,17 @@ function applyGame(){
   setText('#kpiCount','–'); setText('#kpiFrom','–'); setText('#kpiTo','–'); setText('#kpiFormat','–');
   $('#statusText').textContent='Auto‑Check läuft…'; buildMaps([],[]); updateGroupCounters();
 
-  // show cached if present, then try online
+  // cached (falls vorhanden) anzeigen, dann online holen
   const saved=localStorage.getItem(lsKey('archive')); if(saved){ parseArchiveText(saved, false); }
   setTimeout(loadLatest, 150);
 }
 
-// Events
+// Tab Events
 $('#tab-ke').addEventListener('click', ()=>{ GAME='ke'; applyGame(); });
 $('#tab-ej').addEventListener('click', ()=>{ GAME='ej'; applyGame(); });
 $('#tab-lz').addEventListener('click', ()=>{ GAME='lz'; applyGame(); });
 
+// Other Events
 $('#kenoType').addEventListener('change', updateGroupCounters);
 $('#useSuperzahl').addEventListener('change', ()=>{ updateGroupCounters(); buildMaps([],[]); });
 $('#loadLatestBtn').addEventListener('click', loadLatest);
@@ -476,7 +498,8 @@ $('#analyseAllBtn').addEventListener('click', ()=>{
 });
 
 (function init(){
-  const last = localStorage.getItem('lastGame'); GAME = (last && GAMES[last]) ? last : 'ej';
+  // Wenn bereits gespeichert, überschreibt lastGame die Startvorgabe
+  const last = localStorage.getItem('lastGame'); if(last && GAMES[last]) GAME = last;
   if(GAME==='ke') $('#tab-ke').classList.add('active'); if(GAME==='ej') $('#tab-ej').classList.add('active'); if(GAME==='lz') $('#tab-lz').classList.add('active');
   applyGame();
   const lastCheck = localStorage.getItem(lsKey('lastcheck')); if(lastCheck) setText('#kpiFresh', lastCheck);
