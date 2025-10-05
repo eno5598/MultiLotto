@@ -3,191 +3,216 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v0.4)</title>
+<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v0.5)</title>
+
+<!-- libs -->
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
 <style>
-:root{ --cy:#00fff0; --mag:#ff00ea; --ink:#eaf7ff; --bg:#060712; --ok:#39ff88; --bad:#ff6b94; --amber:#f59e0b; }
-body{background:radial-gradient(900px 700px at -10% -10%, rgba(0,255,240,.12), transparent 60%), radial-gradient(900px 700px at 110% -10%, rgba(255,0,234,.12), transparent 60%), var(--bg); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui;}
-.title{background:linear-gradient(90deg,var(--cy),var(--mag)); -webkit-background-clip:text; color:transparent; font-weight:900}
-.glass{background:rgba(15,18,40,.78); backdrop-filter: blur(14px); border:1px solid rgba(0,255,255,.18); border-radius:14px; padding:14px; box-shadow: 0 12px 40px rgba(0,0,0,.45);}
-.chip{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:10px;margin:4px;font-weight:800;font-size:.9rem;color:#bdfcff;background:linear-gradient(180deg,#0e1530,#15204a);border:1px solid rgba(0,255,255,.25);}
-.chip.bonus{color:#fff3d1;background:linear-gradient(180deg,#2b1f0e,#433516);border-color:rgba(255,217,0,.35)}
-.badge{background:rgba(255,255,255,.06); border:1px solid rgba(140,170,255,.22); border-radius:999px; padding:.15rem .6rem; font-size:.74rem;}
-.counter{padding:.2rem .55rem;border-radius:999px;font-weight:700}
-.counter.red{background:#3a1520;border:1px solid var(--bad)}
-.counter.green{background:#153a29;border:1px solid var(--ok)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;height:44px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.08);font-weight:700}
-.btn--green{background:#15803d;color:#fff;}
-.btn--amber{background:#b45309;color:#fff;}
-.btn--gray{background:#374151;color:#fff;}
-.btn:hover{filter:brightness(1.1)}
-.file-label{cursor:pointer; padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,rgba(18,24,50,.9),rgba(14,18,36,.9)); display:inline-flex; gap:8px; align-items:center;}
-.file-input{display:none}
-.map{display:grid; gap:6px;}
-.cell{position:relative; text-align:center; border-radius:10px; padding:8px 0; font-weight:800; border:1px solid rgba(0,255,255,.15);
-      background:linear-gradient(180deg,#0e1530,#15204a); color:#bdfcff;}
-.cell .cnt{position:absolute; right:6px; bottom:4px; font-size:.65rem; opacity:.8}
-.cell.sel{box-shadow:0 0 16px rgba(0,255,240,.5), inset 0 0 0 1px rgba(0,255,255,.6);}
-.banner{display:none;align-items:center;gap:10px; border:1px solid rgba(255,255,255,.15); border-radius:12px; padding:10px 12px; margin-bottom:10px;}
-.banner--new{background:rgba(21,128,61,.2); border-color:#15803d;}
-.banner--warn{background:rgba(245,158,11,.15); border-color:var(--amber);}
+  :root{ --cy:#00fff0; --mag:#ff00ea; --ink:#eaf7ff; --bg:#060712; --ok:#39ff88; --bad:#ff6b94; --amber:#f59e0b; }
+  body{background:radial-gradient(900px 700px at -10% -10%, rgba(0,255,240,.12), transparent 60%), radial-gradient(900px 700px at 110% -10%, rgba(255,0,234,.12), transparent 60%), var(--bg); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui;}
+  .title{background:linear-gradient(90deg,var(--cy),var(--mag)); -webkit-background-clip:text; color:transparent; font-weight:900}
+  .glass{background:rgba(15,18,40,.78); backdrop-filter: blur(14px); border:1px solid rgba(0,255,255,.18); border-radius:14px; padding:14px; box-shadow: 0 12px 40px rgba(0,0,0,.45);}
+  .chip{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:10px;margin:4px;font-weight:800;font-size:.9rem;color:#bdfcff;background:linear-gradient(180deg,#0e1530,#15204a);border:1px solid rgba(0,255,255,.25);}
+  .chip.bonus{color:#fff3d1;background:linear-gradient(180deg,#2b1f0e,#433516);border-color:rgba(255,217,0,.35)}
+  .badge{background:rgba(255,255,255,.06); border:1px solid rgba(140,170,255,.22); border-radius:999px; padding:.15rem .6rem; font-size:.74rem;}
+  .counter{padding:.2rem .55rem;border-radius:999px;font-weight:700}
+  .counter.red{background:#3a1520;border:1px solid var(--bad)}
+  .counter.green{background:#153a29;border:1px solid var(--ok)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;height:44px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.08);font-weight:700}
+  .btn--green{background:#15803d;color:#fff;}
+  .btn--amber{background:#b45309;color:#fff;}
+  .btn--gray{background:#374151;color:#fff;}
+  .btn:hover{filter:brightness(1.1)}
+  .file-label{cursor:pointer; padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg,rgba(18,24,50,.9),rgba(14,18,36,.9)); display:inline-flex; gap:8px; align-items:center;}
+  .file-input{display:none}
+  .map{display:grid; gap:6px; position:relative;}
+  .cell{position:relative; text-align:center; border-radius:10px; padding:8px 0; font-weight:800; border:1px solid rgba(0,255,255,.15);
+        background:linear-gradient(180deg,#0e1530,#15204a); color:#bdfcff;}
+  .cell .cnt{position:absolute; right:6px; bottom:4px; font-size:.65rem; opacity:.8}
+  .cell.sel{box-shadow:0 0 16px rgba(0,255,240,.5), inset 0 0 0 1px rgba(0,255,255,.6);}
+  .sep{position:absolute; top:-6px; bottom:-6px; width:2px; background:rgba(255,255,255,.06); border-left:1px dashed rgba(255,255,255,.18);}
+  .banner{display:none;align-items:center;gap:10px; border:1px solid rgba(255,255,255,.15); border-radius:12px; padding:10px 12px; margin-bottom:10px;}
+  .banner--new{background:rgba(21,128,61,.2); border-color:#15803d;}
+  .banner--warn{background:rgba(245,158,11,.15); border-color:var(--amber);}
 </style>
 </head>
 <body class="p-5">
-<h1 class="title text-3xl md:text-4xl mb-2">🎛️ Multi Lottery Tool</h1>
-<p class="opacity-80 mb-4">Ein Tool für <b>Keno</b>, <b>Eurojackpot</b> und <b>6aus49</b>. Wähle das Spiel – alle Bereiche passen sich automatisch an.</p>
+  <h1 class="title text-3xl md:text-4xl mb-2">🎛️ Multi Lottery Tool</h1>
+  <p class="opacity-80 mb-4">Ein Tool für <b>Keno</b>, <b>Eurojackpot</b> und <b>6aus49</b>. Wähle das Spiel – alle Bereiche passen sich automatisch an.</p>
 
-<div class="glass mb-4">
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-    <div>
-      <label class="font-semibold">Spiel auswählen</label>
-      <select id="gameSelect" class="bg-gray-900 p-2 rounded w-full mt-1">
-        <option value="ke">Keno</option>
-        <option value="ej">Eurojackpot</option>
-        <option value="lz">Lotto 6aus49</option>
-      </select>
-    </div>
-    <div id="gameMeta" class="text-sm opacity-80"></div>
-  </div>
-</div>
-
-<div class="glass mb-4" id="archivBox">
-  <h2 class="text-xl font-bold mb-2">📂 Archiv</h2>
-  <div id="updateBanner" class="banner banner--new"><span>🟢 Neue Ziehung erkannt:</span><b id="newDrawDate"></b></div>
-  <div id="staleBanner" class="banner banner--warn"><span>🟠 Hinweis:</span><span>Archiv nicht online geprüft. Lokale Sicherung geladen.</span></div>
-  <p id="statusText" class="text-sm mb-2">Noch kein Archiv geladen.</p>
-
-  <div class="glass mb-3">
-    <div class="font-semibold mb-2">Automatisches Laden</div>
-    <div class="flex flex-col md:flex-row gap-2">
-      <input id="archiveUrl" class="bg-gray-900 p-2 rounded flex-1" placeholder="Archiv-URL">
-      <button type="button" id="loadLatestBtn" class="btn btn--green">📥 Neueste laden</button>
-      <button type="button" id="forceDlBtn" class="btn btn--amber">⬇️ ZIP speichern</button>
-      <a id="directDl" class="btn btn--gray" target="_blank" rel="noopener">🔗 Direktlink</a>
-    </div>
-    <p class="text-xs text-gray-300 mt-2">Beim Öffnen/Reload wird automatisch versucht, das aktuellste Archiv zu laden (ZIP/TXT/CSV werden zusammengeführt).</p>
-  </div>
-
-  <div class="glass mb-3">
-    <div class="font-semibold mb-2">Manuell laden</div>
-    <label class="file-label">
-      📄 Dateien auswählen (mehrere möglich)
-      <input multiple type="file" id="zipInput" class="file-input" accept=".zip,.txt,.csv">
-    </label>
-    <span id="fileName" class="ml-2 text-sm opacity-80">Keine Datei ausgewählt</span>
-  </div>
-
-  <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
-    <div><div class="text-sm text-gray-300">Ziehungen</div><div id="kpiCount" class="font-bold">–</div></div>
-    <div><div class="text-sm text-gray-300">Von</div><div id="kpiFrom" class="font-bold">–</div></div>
-    <div><div class="text-sm text-gray-300">Bis</div><div id="kpiTo" class="font-bold">–</div></div>
-    <div><div class="text-sm text-gray-300">Letzter Online-Check</div><div id="kpiFresh" class="font-bold">–</div></div>
-    <div><div class="text-sm text-gray-300">Spiel-Format</div><div id="kpiFormat" class="font-bold">–</div></div>
-  </div>
-
-  <div id="diag" class="mt-3 text-xs opacity-80 hidden"></div>
-</div>
-
-<div class="glass mb-4" id="genBox">
-  <h2 class="text-xl font-bold mb-2">⚡ Generieren (Gruppen-Modus)</h2>
-
-  <div id="kenoTypeWrap" class="hidden mb-2">
-    <div class="flex items-center gap-3 flex-wrap">
-      <label>Keno‑Typ (Anzahl zu tippender Zahlen)
-        <select id="kenoType" class="bg-gray-900 p-2 rounded">
-          <option value="2">Typ 2</option>
-          <option value="3">Typ 3</option>
-          <option value="4">Typ 4</option>
-          <option value="5">Typ 5</option>
-          <option value="6">Typ 6</option>
-          <option value="7">Typ 7</option>
-          <option value="8">Typ 8</option>
-          <option value="9">Typ 9</option>
-          <option value="10" selected>Typ 10</option>
+  <div class="glass mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+      <div>
+        <label class="font-semibold">Spiel auswählen</label>
+        <select id="gameSelect" class="bg-gray-900 p-2 rounded w-full mt-1">
+          <option value="ke">Keno</option>
+          <option value="ej">Eurojackpot</option>
+          <option value="lz">Lotto 6aus49</option>
         </select>
-      </label>
-      <span class="badge">Auswertung basiert auf 20er‑Ziehungen aus dem Archiv.</span>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-    <div><label class="text-sm text-gray-300">Anzahl Kombinationen</label>
-      <input type="number" id="kombis" value="5" min="1" max="50" class="bg-gray-900 p-2 rounded w-full"></div>
-    <div class="grid grid-cols-3 gap-2">
-      <button type="button" id="generateBtn" class="btn btn--green">⚡ Generieren</button>
-      <button type="button" id="analyseAllBtn" class="btn btn--amber">📊 Alle analysieren</button>
-      <button type="button" id="clearGeneratedBtn" class="btn btn--gray">🗑️ Alle löschen</button>
-    </div>
-    <div class="flex items-center gap-3" id="bonusToggles"></div>
-  </div>
-
-  <div id="groupUI" class="mt-4">
-    <div class="mb-1 text-sm text-gray-300 flex items-center gap-3 flex-wrap">
-      <span>Gruppen: exakt <b id="needMain"></b> Hauptzahlen</span>
-      <span id="mainCounter" class="counter red">0/0</span>
-      <span id="bonusCounter" class="counter green" style="display:none">0/0</span>
-    </div>
-    <div id="groupControls" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
-    <div id="bonusControls" class="grid grid-cols-2 gap-2 mt-2"></div>
-    <div id="groupError" class="bg-red-900/40 border border-red-400 text-red-200 rounded px-2 py-1 hidden mt-2"></div>
-  </div>
-
-  <div class="mt-4">
-    <div class="flex items-center gap-2 mb-1">
-      <h3 class="font-bold">🗺️ Map</h3>
-      <span class="text-xs opacity-80">Farbintensität = Häufigkeit (komplettes Archiv)</span>
-    </div>
-    <div id="mapMain" class="map"></div>
-    <div id="bonusMapWrap" class="mt-3 hidden">
-      <div class="flex items-center gap-2 mb-1">
-        <h3 class="font-bold">⭐ Bonus-Map</h3>
-        <span class="text-xs opacity-80">Nur für Spiele mit Zusatzzahlen</span>
       </div>
-      <div id="mapBonus" class="map"></div>
+      <div id="gameMeta" class="text-sm opacity-80"></div>
     </div>
   </div>
 
-  <pre id="liveOutput" class="font-mono bg-black/70 p-3 mt-3 rounded h-44 overflow-auto text-green-300"></pre>
-  <div id="cards" class="mt-3"></div>
-</div>
+  <div class="glass mb-4" id="archivBox">
+    <h2 class="text-xl font-bold mb-2">📂 Archiv</h2>
+    <div id="updateBanner" class="banner banner--new"><span>🟢 Neue Ziehung erkannt:</span><b id="newDrawDate"></b></div>
+    <div id="staleBanner" class="banner banner--warn"><span>🟠 Hinweis:</span><span>Archiv nicht online geprüft. Lokale Sicherung geladen.</span></div>
+    <p id="statusText" class="text-sm mb-2">Noch kein Archiv geladen.</p>
 
-<div class="glass" id="anaBox">
-  <h2 class="text-xl font-bold mb-2">📊 Analyse</h2>
-  <div id="analysisBox" class="mt-1 text-sm"></div>
-</div>
+    <div class="glass mb-3">
+      <div class="font-semibold mb-2">Automatisches Laden</div>
+      <div class="flex flex-col md:flex-row gap-2">
+        <input id="archiveUrl" class="bg-gray-900 p-2 rounded flex-1" placeholder="Archiv-URL">
+        <button type="button" id="loadLatestBtn" class="btn btn--green">📥 Neueste laden</button>
+        <button type="button" id="forceDlBtn" class="btn btn--amber">⬇️ ZIP speichern</button>
+        <a id="directDl" class="btn btn--gray" target="_blank" rel="noopener">🔗 Direktlink</a>
+      </div>
+      <p class="text-xs text-gray-300 mt-2">ZIP/TXT/CSV werden automatisch zusammengeführt. Bei CORS-Problemen werden mehrere Fallbacks versucht.</p>
+    </div>
+
+    <div class="glass mb-3">
+      <div class="font-semibold mb-2">Manuell laden</div>
+      <label class="file-label">
+        📄 Dateien auswählen (mehrere möglich)
+        <input multiple type="file" id="zipInput" class="file-input" accept=".zip,.txt,.csv">
+      </label>
+      <span id="fileName" class="ml-2 text-sm opacity-80">Keine Datei ausgewählt</span>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
+      <div><div class="text-sm text-gray-300">Ziehungen</div><div id="kpiCount" class="font-bold">–</div></div>
+      <div><div class="text-sm text-gray-300">Von</div><div id="kpiFrom" class="font-bold">–</div></div>
+      <div><div class="text-sm text-gray-300">Bis</div><div id="kpiTo" class="font-bold">–</div></div>
+      <div><div class="text-sm text-gray-300">Letzter Online-Check</div><div id="kpiFresh" class="font-bold">–</div></div>
+      <div><div class="text-sm text-gray-300">Spiel-Format</div><div id="kpiFormat" class="font-bold">–</div></div>
+    </div>
+
+    <div id="diag" class="mt-3 text-xs opacity-80 hidden"></div>
+  </div>
+
+  <div class="glass mb-4" id="genBox">
+    <h2 class="text-xl font-bold mb-2">⚡ Generieren (Gruppen-Modus)</h2>
+
+    <div id="kenoTypeWrap" class="hidden mb-2">
+      <div class="flex items-center gap-3 flex-wrap">
+        <label>Keno‑Typ (Anzahl zu tippender Zahlen)
+          <select id="kenoType" class="bg-gray-900 p-2 rounded">
+            <option value="2">Typ 2</option>
+            <option value="3">Typ 3</option>
+            <option value="4">Typ 4</option>
+            <option value="5">Typ 5</option>
+            <option value="6">Typ 6</option>
+            <option value="7">Typ 7</option>
+            <option value="8">Typ 8</option>
+            <option value="9">Typ 9</option>
+            <option value="10" selected>Typ 10</option>
+          </select>
+        </label>
+        <span class="badge">Auswertung basiert auf 20er‑Ziehungen aus dem Archiv.</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div><label class="text-sm text-gray-300">Anzahl Kombinationen</label>
+        <input type="number" id="kombis" value="5" min="1" max="50" class="bg-gray-900 p-2 rounded w-full"></div>
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" id="generateBtn" class="btn btn--green">⚡ Generieren</button>
+        <button type="button" id="analyseAllBtn" class="btn btn--amber">📊 Alle analysieren</button>
+        <button type="button" id="clearGeneratedBtn" class="btn btn--gray">🗑️ Alle löschen</button>
+      </div>
+      <div class="flex items-center gap-3" id="bonusToggles"></div>
+    </div>
+
+    <div id="groupUI" class="mt-4">
+      <div class="mb-1 text-sm text-gray-300 flex items-center gap-3 flex-wrap">
+        <span>Gruppen: exakt <b id="needMain"></b> Hauptzahlen</span>
+        <span id="mainCounter" class="counter red">0/0</span>
+        <span id="bonusCounter" class="counter green" style="display:none">0/0</span>
+      </div>
+      <div id="groupControls" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+      <div id="bonusControls" class="grid grid-cols-2 gap-2 mt-2"></div>
+      <div id="groupError" class="bg-red-900/40 border border-red-400 text-red-200 rounded px-2 py-1 hidden mt-2"></div>
+    </div>
+
+    <div class="mt-4">
+      <div class="flex items-center gap-2 mb-1">
+        <h3 class="font-bold">🗺️ Map</h3>
+        <span class="text-xs opacity-80">Spalten = 1–10, 11–20, … (Keno bis 61–70)</span>
+      </div>
+      <div id="mapWrap" class="relative">
+        <div id="mapMain" class="map"></div>
+        <div id="mapSeps"></div>
+      </div>
+      <div id="bonusMapWrap" class="mt-3 hidden">
+        <div class="flex items-center gap-2 mb-1">
+          <h3 class="font-bold">⭐ Bonus-Map</h3>
+          <span class="text-xs opacity-80">Eurozahlen / Superzahl</span>
+        </div>
+        <div id="mapBonus" class="map"></div>
+      </div>
+    </div>
+
+    <pre id="liveOutput" class="font-mono bg-black/70 p-3 mt-3 rounded h-44 overflow-auto text-green-300"></pre>
+    <div id="cards" class="mt-3"></div>
+  </div>
+
+  <div class="glass" id="anaBox">
+    <h2 class="text-xl font-bold mb-2">📊 Analyse</h2>
+    <div id="analysisBox" class="mt-1 text-sm"></div>
+  </div>
 
 <script>
+/* ============================= Config ===================================== */
 const GAMES={
-  ke:{name:'Keno', key:'ke', url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_keno.zip',
-      main:{from:1,to:70,pick:20,groups:[{label:'1–14',from:1,to:14},{label:'15–28',from:15,to:28},{label:'29–42',from:29,to:42},{label:'43–56',from:43,to:56},{label:'57–70',from:57,to:70}]},
-      bonus:{enabled:false}, formatLabel:'20 aus 70 (Ziehung) • Tippgröße = Keno‑Typ'},
-  ej:{name:'Eurojackpot', key:'ej', url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_eurojackpot.zip',
-      main:{from:1,to:50,pick:5,groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–50',from:41,to:50}]},
-      bonus:{enabled:true,label:'Eurozahlen',from:1,to:12,pick:2,groups:[{label:'1–6',from:1,to:6},{label:'7–12',from:7,to:12}]},
-      formatLabel:'5 aus 50 + 2 aus 12'},
-  lz:{name:'Lotto 6aus49', key:'lz', url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_lotto.zip',
-      main:{from:1,to:49,pick:6,groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–49',from:41,to:49}]},
-      bonus:{enabled:true,label:'Superzahl',from:0,to:9,pick:1,groups:[{label:'0–4',from:0,to:4},{label:'5–9',from:5,to:9}]},
-      formatLabel:'6 aus 49 (+ SZ)'},
+  ke:{ // Keno
+    name:'Keno', key:'ke',
+    url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_keno.zip',
+    main:{from:1,to:70,pick:20,
+      groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–50',from:41,to:50}]},
+    bonus:{enabled:false},
+    formatLabel:'20 aus 70 (Ziehung) • Tippgröße = Keno‑Typ'
+  },
+  ej:{
+    name:'Eurojackpot', key:'ej',
+    url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_eurojackpot.zip',
+    main:{from:1,to:50,pick:5,
+      groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–50',from:41,to:50}]},
+    bonus:{enabled:true,label:'Eurozahlen',from:1,to:12,pick:2,groups:[{label:'1–6',from:1,to:6},{label:'7–12',from:7,to:12}]},
+    formatLabel:'5 aus 50 + 2 aus 12'
+  },
+  lz:{
+    name:'Lotto 6aus49', key:'lz',
+    url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_lotto.zip',
+    main:{from:1,to:49,pick:6,
+      groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–49',from:41,to:49}]},
+    bonus:{enabled:true,label:'Superzahl',from:0,to:9,pick:1,groups:[{label:'0–4',from:0,to:4},{label:'5–9',from:5,to:9}]},
+    formatLabel:'6 aus 49 (+ SZ)'
+  }
 };
+
+/* ============================= State ====================================== */
 let GAME=GAMES.ke; let draws=[]; let freqMain=[]; let freqBonus=[]; let generated=[];
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
 function setText(sel,val){ const el=$(sel); if(el) el.textContent=val; }
 function lsKey(k){ return `${GAME.key}_${k}`; }
 
+/* ============================ Helpers ===================================== */
 function iso(y,m,d){ const Y=(+y<100)?(2000+(+y)):(+y); const dt=new Date(Date.UTC(Y,+m-1,+d)); return isNaN(dt)? null : dt.toISOString().slice(0,10); }
-function tokenize(line){ return line.replace(/[,;:	]/g,' ').trim().split(/\s+/); }
+function tokenize(line){ return line.replace(/[,;:\\t]/g,' ').trim().split(/\\s+/); }
 function plausibleDMY(d,m,y){ return d>=1 && d<=31 && m>=1 && m<=12 && y>=1900 && y<=2100; }
+
 function extractDateAndNumbers(line){
   const tok=tokenize(line); if(tok.length<3) return null;
   let d=null,m=null,y=null,startIdx=0;
-  if(/^\d+$/.test(tok[0]) && /^\d+$/.test(tok[1]) && /^\d+$/.test(tok[2])){ d=+tok[0]; m=+tok[1]; y=+tok[2]; if(plausibleDMY(d,m,y)) startIdx=3; else {d=m=y=null;} }
+  if(/^\\d+$/.test(tok[0]) && /^\\d+$/.test(tok[1]) && /^\\d+$/.test(tok[2])){ d=+tok[0]; m=+tok[1]; y=+tok[2]; if(plausibleDMY(d,m,y)) startIdx=3; else {d=m=y=null;} }
   if(!d){
-    const m1=line.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
+    const m1=line.match(/(\\d{1,2})[.\\-\\/](\\d{1,2})[.\\-\\/](\\d{2,4})/);
     if(m1){ d=+m1[1]; m=+m1[2]; y=+m1[3];
       if(plausibleDMY(d,m,y)){
-        const after=line.replace(m1[0],' ').replace(/[;,]/g,' ').trim().split(/\s+/);
+        const after=line.replace(m1[0],' ').replace(/[;,]/g,' ').trim().split(/\\s+/);
         return {date: iso(y,m,d), nums: after.map(Number).filter(n=>!Number.isNaN(n))};
       }
     }
@@ -196,14 +221,14 @@ function extractDateAndNumbers(line){
   return { date: iso(y,m,d), nums: tok.slice(startIdx).map(Number).filter(n=>!Number.isNaN(n)) };
 }
 
-/* Keno: exakt ein 20er-Set (erste 20 gültigen Zahlen 1..70) */
+/* ---- Splitter: Keno = erstes 20er-Set je Zeile ----- */
 function extractSets(nums){
   if(GAME.key==='ke'){
     const main=[];
-    for(const n of nums){ if(n>=GAME.main.from && n<=GAME.main.to){ main.push(n); if(main.length===20) break; } }
-    if(main.length===20){ return [{main: Array.from(new Set(main)).sort((a,b)=>a-b), bonus:[]}]; }
-    return [];
+    for(const n of nums){ if(n>=1 && n<=70){ main.push(n); if(main.length===20) break; } }
+    return (main.length===20)? [{main: Array.from(new Set(main)).sort((a,b)=>a-b), bonus:[]}] : [];
   }
+  // Eurojackpot & 6aus49: mehrere Sets (A/B) möglich
   const out=[]; let i=0;
   while(i<nums.length){
     const main=[]; let j=i;
@@ -222,12 +247,10 @@ function extractSets(nums){
   return out;
 }
 
+/* ---- Parser ---- */
 function parseArchiveText(txt, save=true){
   try{
-    const lines=txt.replace(/
-?/g,'
-').split('
-').map(l=>l.trim()).filter(Boolean);
+    const lines=txt.replace(/\\r\\n?/g,'\\n').split('\\n').map(l=>l.trim()).filter(Boolean);
     draws=[]; freqMain=Array(GAME.main.to+1).fill(0); freqBonus=Array((GAME.bonus?.to??0)+1).fill(0);
     let diagCounts=[];
     for(const line of lines){
@@ -245,7 +268,7 @@ function parseArchiveText(txt, save=true){
     if(!draws.length) throw new Error('Keine gültigen Ziehungen erkannt.');
     draws.sort((a,b)=>a.date.localeCompare(b.date));
     setText('#kpiCount', draws.length); setText('#kpiFrom', draws[0].date); setText('#kpiTo', draws.at(-1).date);
-    document.getElementById('statusText').textContent='Archiv geladen ✔';
+    $('#statusText').textContent='Archiv geladen ✔';
     buildMaps([],[]);
     if(save){ localStorage.setItem(lsKey('archive'), txt); localStorage.setItem(lsKey('lastdate'), draws.at(-1).date); }
     if(GAME.key==='ke'){
@@ -257,12 +280,14 @@ function parseArchiveText(txt, save=true){
       d.innerHTML = `🔎 Keno-Diagnose: erkannte Hauptzahlen je Zeile → min <b>${min}</b>, max <b>${max}</b>, Ø <b>${avg}</b>. Erwartet: 20.`;
     } else { document.getElementById('diag').classList.add('hidden'); }
     return draws.at(-1).date;
-  }catch(e){ document.getElementById('statusText').textContent='Fehler: '+e.message; return null; }
+  }catch(e){ $('#statusText').textContent='Fehler: '+e.message; return null; }
 }
 
+/* ========================== Maps ============================= */
 function buildMaps(hiMain=[], hiBonus=[]){
-  const host=document.getElementById('mapMain'); host.innerHTML='';
-  const cols = (GAME.main.to<=49)?7 : (GAME.main.to<=50?10:10);
+  const host=$('#mapMain'); host.innerHTML='';
+  // 10 Spalten fest, damit 1–10, 11–20 … gruppiert sind
+  const cols = 10;
   host.style.gridTemplateColumns = `repeat(${cols}, minmax(0,1fr))`;
   const max = Math.max(...freqMain.slice(GAME.main.from)) || 1;
   for(let n=GAME.main.from; n<=GAME.main.to; n++){
@@ -271,9 +296,17 @@ function buildMaps(hiMain=[], hiBonus=[]){
     div.style.background=`linear-gradient(180deg, rgba(0,255,240,${alpha*.3}), rgba(0,160,220,${alpha*.15}))`;
     div.innerHTML=`<span>${n}</span><span class="cnt">${f}</span>`; host.appendChild(div);
   }
-  const hostB=document.getElementById('mapBonus'); hostB.innerHTML='';
+  // visuelle Separatoren nach jeder 10er-Gruppe
+  const wrap = $('#mapWrap'); const seps=$('#mapSeps'); seps.innerHTML=''; const rect = host.getBoundingClientRect();
+  const rows = Math.ceil((GAME.main.to - GAME.main.from + 1)/10);
+  // CSS-Only: wir platzieren 9 dünne Linien relativ
+  for(let i=1;i<10;i++){
+    const v=document.createElement('div'); v.className='sep'; v.style.left=`calc((100% / 10) * ${i})`; wrap.appendChild(v);
+  }
+  // Bonus map
+  const hostB=$('#mapBonus'); hostB.innerHTML='';
   if(GAME.bonus?.enabled){
-    document.getElementById('bonusMapWrap').classList.remove('hidden');
+    $('#bonusMapWrap').classList.remove('hidden');
     const colsB=(GAME.bonus.to<=12)?6:10; hostB.style.gridTemplateColumns=`repeat(${colsB}, minmax(0,1fr))`;
     const maxB=Math.max(...freqBonus.slice(GAME.bonus.from))||1;
     for(let b=GAME.bonus.from; b<=GAME.bonus.to; b++){
@@ -282,63 +315,76 @@ function buildMaps(hiMain=[], hiBonus=[]){
       div.style.background=`linear-gradient(180deg, rgba(255,225,0,${alpha*.25}), rgba(255,160,0,${alpha*.15}))`;
       div.innerHTML=`<span>${b}</span><span class="cnt">${f}</span>`; hostB.appendChild(div);
     }
-  } else { document.getElementById('bonusMapWrap').classList.add('hidden'); }
+  } else { $('#bonusMapWrap').classList.add('hidden'); }
 }
 
+/* ======================== Downloader ========================= */
 async function ensureJSZip(){ return !!window.JSZip; }
 async function fetchWithProxies(url){
-  const trials=[url,'https://cors.isomorphic-git.org/'+url,'https://api.allorigins.win/raw?url='+encodeURIComponent(url),'https://thingproxy.freeboard.io/fetch/'+url,'https://corsproxy.io/?'+encodeURIComponent(url)];
-  let last=null;
-  for(const u of trials){
+  const candidates = [
+    {u:url, t:'direct'},
+    {u:'https://cors.isomorphic-git.org/'+url, t:'cors-proxy'},
+    {u:'https://api.allorigins.win/raw?url='+encodeURIComponent(url), t:'allorigins-raw'},
+    {u:'https://thingproxy.freeboard.io/fetch/'+url, t:'thingproxy'},
+    {u:'https://corsproxy.io/?'+encodeURIComponent(url), t:'corsproxy'}
+  ];
+  let lastErr=null;
+  for(const c of candidates){
     try{
-      const res=await fetch(u,{cache:'no-store'}); if(!res.ok) throw new Error('HTTP '+res.status);
-      const ct=res.headers.get('content-type')||'';
-      if(ct.includes('zip') || u.endsWith('.zip')){
-        if(!(await ensureJSZip())) throw new Error('JSZip fehlt.');
-        const blob=await res.blob(); const zip=await JSZip.loadAsync(blob); const entries=Object.values(zip.files);
-        const wanted = entries.filter(f=>/\.(txt|csv)$/i.test(f.name));
-        if(!wanted.length) throw new Error('ZIP ohne TXT/CSV');
-        let combined=''; for(const f of wanted){ combined += '
-' + await f.async('string'); }
+      const res = await fetch(c.u, {cache:'no-store', mode:'cors', referrerPolicy:'no-referrer'});
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const ct=(res.headers.get('content-type')||'').toLowerCase();
+      if(ct.includes('zip') || c.u.endsWith('.zip')){
+        if(!(await ensureJSZip())) throw new Error('JSZip nicht geladen');
+        const blob = await res.blob();
+        const zip = await JSZip.loadAsync(blob);
+        const files = Object.values(zip.files).filter(f=>/\\.(txt|csv)$/i.test(f.name));
+        if(!files.length) throw new Error('ZIP ohne TXT/CSV-Inhalt');
+        let combined=''; for(const f of files){ combined += "\\n" + await f.async('string'); }
         return combined;
-      } else { return await res.text(); }
-    }catch(e){ last=e; }
+      } else {
+        return await res.text();
+      }
+    }catch(e){
+      lastErr = e;
+    }
   }
-  throw last||new Error('Download fehlgeschlagen');
+  throw lastErr || new Error('Download fehlgeschlagen');
 }
 
 async function loadLatestAndDetect(){
-  const url=document.getElementById('archiveUrl').value.trim();
-  document.getElementById('updateBanner').style.display='none'; document.getElementById('staleBanner').style.display='none';
-  if(!url){ document.getElementById('statusText').textContent='Keine URL gesetzt. Bitte manuell laden.'; return; }
-  document.getElementById('statusText').textContent='Online-Archiv wird geprüft…';
+  const url=$('#archiveUrl').value.trim();
+  $('#updateBanner').style.display='none'; $('#staleBanner').style.display='none';
+  if(!url){ $('#statusText').textContent='Keine URL gesetzt. Bitte manuell laden.'; return; }
+  $('#statusText').textContent='Online-Archiv wird geprüft…';
   try{
     const raw=await fetchWithProxies(url);
     const latest=parseArchiveText(raw,true);
     const lastSeen=localStorage.getItem(lsKey('lastdate'));
     if(latest){
       const newDetected=(!lastSeen || latest > lastSeen);
-      if(newDetected){ document.getElementById('newDrawDate').textContent=latest; document.getElementById('updateBanner').style.display='flex'; }
+      if(newDetected){ $('#newDrawDate').textContent=latest; $('#updateBanner').style.display='flex'; }
       const now=new Date().toISOString().replace('T',' ').slice(0,16);
       localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now);
     }
   }catch(e){
     const saved=localStorage.getItem(lsKey('archive'));
-    if(saved){ parseArchiveText(saved,false); document.getElementById('staleBanner').style.display='flex'; }
-    else { document.getElementById('statusText').textContent='Online-Check fehlgeschlagen und kein lokales Archiv.'; }
+    if(saved){ parseArchiveText(saved,false); $('#staleBanner').style.display='flex'; }
+    else { $('#statusText').textContent='Fehler beim Laden: '+e.message; }
   }
 }
 
+/* ============================ Generator/Analyse =========================== */
 function setCounterEl(el, val, total){ el.textContent = `${val}/${total}`; el.classList.toggle('green', val===total); el.classList.toggle('red', val!==total); }
 function updateGroupCounters(){
   let sumG=0; $$('#groupControls select').forEach(s=>{ const v=+s.value||0; sumG+=v; s.parentElement.lastChild.textContent=v; });
   const need = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  setCounterEl(document.getElementById('mainCounter'), sumG, need);
+  setCounterEl($('#mainCounter'), sumG, need);
   if(GAME.bonus?.enabled){
     let sumB=0; $$('#bonusControls select').forEach(s=>{ const v=+s.value||0; sumB+=v; s.parentElement.lastChild.textContent=v; });
-    setCounterEl(document.getElementById('bonusCounter'), sumB, GAME.bonus.pick);
+    setCounterEl($('#bonusCounter'), sumB, GAME.bonus.pick);
   }
-  const err=document.getElementById('groupError'); err.classList.add('hidden'); err.textContent='';
+  const err=$('#groupError'); err.classList.add('hidden'); err.textContent='';
   if(sumG!==need){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${need} Hauptzahlen wählen.`; }
   if(GAME.bonus?.enabled){
     let sumB=0; $$('#bonusControls select').forEach(s=> sumB+= (+s.value||0));
@@ -361,7 +407,7 @@ function generateOne(){
   const needMain = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
   const wantMain = $$('#groupControls select').map(s=>+s.value||0);
   const sumMain = wantMain.reduce((a,b)=>a+b,0);
-  const err=document.getElementById('groupError'); err.classList.add('hidden'); err.textContent='';
+  const err=$('#groupError'); err.classList.add('hidden'); err.textContent='';
   if(sumMain!==needMain){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${needMain} Hauptzahlen wählen.`; throw new Error('Gruppen unvollständig'); }
   let main=[]; GAME.main.groups.forEach((g,i)=>{ const need=wantMain[i]; if(need>0){ main.push(...pickFromRange(g.from, g.to, main, need, weightMain)); } });
   main = Array.from(new Set(main)).sort((a,b)=>a-b).slice(0,needMain);
@@ -406,96 +452,98 @@ function tipCard(idx, tip){
   return card;
 }
 
+/* ============================= Events ===================================== */
 function applyGame(){
-  document.getElementById('archiveUrl').value = GAME.url || '';
-  document.getElementById('directDl').href  = GAME.url || '#';
-  document.getElementById('kpiFormat').textContent = GAME.formatLabel;
-  document.getElementById('gameMeta').textContent = `${GAME.name}: Haupt ${GAME.main.from}–${GAME.main.to}` + (GAME.key==='ke' ? ' (Archiv: 20 Zahlen je Ziehung)' : '') + (GAME.bonus?.enabled? ` • ${GAME.bonus.label} ${GAME.bonus.from}–${GAME.bonus.to}`:'');
-  document.getElementById('kenoTypeWrap').classList.toggle('hidden', GAME.key!=='ke');
+  $('#archiveUrl').value = GAME.url || '';
+  $('#directDl').href  = GAME.url || '#';
+  $('#kpiFormat').textContent = GAME.formatLabel;
+  $('#gameMeta').textContent = `${GAME.name}: Haupt ${GAME.main.from}–${GAME.main.to}` + (GAME.key==='ke' ? ' (Archiv: 20 Zahlen je Ziehung)' : '') + (GAME.bonus?.enabled? ` • ${GAME.bonus.label} ${GAME.bonus.from}–${GAME.bonus.to}`:'');
 
-  const gc=document.getElementById('groupControls'); gc.innerHTML='';
+  // Keno‑Typ UI
+  $('#kenoTypeWrap').classList.toggle('hidden', GAME.key!=='ke');
+
+  // groups
+  $('#groupControls').innerHTML='';
   GAME.main.groups.forEach((g,i)=>{
     const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
     const maxSel = (GAME.key==='ke') ? 10 : GAME.main.pick;
     const options = [...Array(maxSel+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join('');
     row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`;
-    gc.appendChild(row);
+    $('#groupControls').appendChild(row);
   });
   $$('#groupControls select').forEach(sel=> sel.addEventListener('change', updateGroupCounters));
 
-  const bc=document.getElementById('bonusControls'); bc.innerHTML='';
-  document.getElementById('bonusMapWrap').classList.toggle('hidden', !(GAME.bonus?.enabled));
-  document.getElementById('bonusCounter').style.display = (GAME.bonus?.enabled)? 'inline-block':'none';
+  // bonus groups
+  $('#bonusControls').innerHTML='';
+  $('#bonusMapWrap').classList.toggle('hidden', !(GAME.bonus?.enabled));
+  $('#bonusCounter').style.display = (GAME.bonus?.enabled)? 'inline-block':'none';
   if(GAME.bonus?.enabled){
     GAME.bonus.groups.forEach((g,i)=>{
       const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
       const options = [...Array(GAME.bonus.pick+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join('');
       row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded bonus" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`;
-      bc.appendChild(row);
+      $('#bonusControls').appendChild(row);
     });
     $$('#bonusControls select').forEach(sel=> sel.addEventListener('change', updateGroupCounters));
   }
 
+  // need counter
   const need = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  document.getElementById('needMain').textContent = need;
+  $('#needMain').textContent = need;
 
-  const mapCols = (GAME.main.to<=49)?7 : (GAME.main.to<=50?10:10);
-  document.getElementById('mapMain').style.gridTemplateColumns = `repeat(${mapCols}, minmax(0,1fr))`;
+  // maps: fix 10 columns for main numbers
+  $('#mapMain').style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
   if(GAME.bonus?.enabled){
     const bCols=(GAME.bonus.to<=12)?6:10;
-    document.getElementById('mapBonus').style.gridTemplateColumns=`repeat(${bCols}, minmax(0,1fr))`;
+    $('#mapBonus').style.gridTemplateColumns=`repeat(${bCols}, minmax(0,1fr))`;
   }
 
   draws=[]; freqMain = Array(GAME.main.to+1).fill(0); freqBonus= Array((GAME.bonus?.to??0)+1).fill(0); generated=[];
-  document.getElementById('diag').classList.add('hidden');
-  document.getElementById('statusText').textContent='Bitte Archiv laden (automatisch beim Öffnen)';
+  $('#diag').classList.add('hidden');
+  $('#statusText').textContent='Bitte Archiv laden (automatisch beim Öffnen)';
   buildMaps([],[]); updateGroupCounters();
   setTimeout(loadLatestAndDetect, 200);
 }
+$('#gameSelect').addEventListener('change', e=>{ GAME=GAMES[e.target.value]; applyGame(); });
+$('#kenoType').addEventListener('change', updateGroupCounters);
 
-document.getElementById('gameSelect').addEventListener('change', e=>{ GAME=GAMES[e.target.value]; applyGame(); });
-document.getElementById('kenoType').addEventListener('change', updateGroupCounters);
 document.getElementById('loadLatestBtn').addEventListener('click', loadLatestAndDetect);
 document.getElementById('forceDlBtn').addEventListener('click', async ()=>{
-  const url=document.getElementById('archiveUrl').value.trim();
-  try{ const res=await fetch(url); const blob=await res.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${GAME.key}_archiv.zip`; a.click(); URL.revokeObjectURL(a.href); }catch(e){ alert('Direkt-Download nicht möglich.'); }
+  const url=$('#archiveUrl').value.trim();
+  try{ const res=await fetch(url,{mode:'cors', referrerPolicy:'no-referrer'}); const blob=await res.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${GAME.key}_archiv.zip`; a.click(); URL.revokeObjectURL(a.href); }catch(e){ alert('Direkt-Download nicht möglich: '+e.message); }
 });
 document.getElementById('zipInput').addEventListener('change', async (e)=>{
-  const files=Array.from(e.target.files||[]); if(!files.length) return; document.getElementById('fileName').textContent=files.map(f=>f.name).join(', ');
+  const files=Array.from(e.target.files||[]); if(!files.length) return; $('#fileName').textContent=files.map(f=>f.name).join(', ');
   try{
     let combined='';
     for(const file of files){
       if(file.name.toLowerCase().endsWith('.zip')){
         const zip=await JSZip.loadAsync(file); const entries=Object.values(zip.files);
-        for(const f of entries){ if(/\.(txt|csv)$/i.test(f.name)){ combined += "
-" + await f.async('string'); } }
-      }else{ combined += "
-" + await file.text(); }
+        for(const f of entries){ if(/\\.(txt|csv)$/i.test(f.name)){ combined += "\\n" + await f.async('string'); } }
+      }else{ combined += "\\n" + await file.text(); }
     }
     const latest=parseArchiveText(combined,true);
     if(latest){ localStorage.setItem(lsKey('lastdate'), latest); const now=new Date().toISOString().replace('T',' ').slice(0,16); localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now); }
-  }catch(err){ document.getElementById('statusText').textContent='Fehler: '+err.message; }
+  }catch(err){ $('#statusText').textContent='Fehler: '+err.message; }
 });
 
 document.getElementById('generateBtn').addEventListener('click', ()=>{
   if(!draws.length){ alert('Bitte zuerst ein Archiv laden.'); return; }
-  const total= +document.getElementById('kombis').value || 1;
-  document.getElementById('liveOutput').textContent=''; document.getElementById('cards').innerHTML=''; generated=[]; const seen=new Set();
+  const total= +$('#kombis').value || 1; $('#liveOutput').textContent=''; $('#cards').innerHTML=''; generated=[]; const seen=new Set();
   for(let i=1;i<=total;i++){
     try{
       let tip = generateOne();
       let key = tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x');
       let guard=0; while(seen.has(key) && guard<12){ tip = generateOne(); key=tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x'); guard++; }
       seen.add(key); generated.push(tip);
-      const out=document.getElementById('liveOutput'); out.textContent += `#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join(' ') : ''}
-`; out.scrollTop=out.scrollHeight;
+      const out=$('#liveOutput'); out.textContent += `#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join(' ') : ''}\\n`; out.scrollTop=out.scrollHeight;
       buildMaps(tip.main, tip.bonus||[]);
-      document.getElementById('cards').appendChild(tipCard(i, tip));
-    }catch(e){ const err=document.getElementById('groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; }
+      $('#cards').appendChild(tipCard(i, tip));
+    }catch(e){ const err=$('#groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; }
   }
 });
-document.getElementById('clearGeneratedBtn').addEventListener('click', ()=>{ generated=[]; document.getElementById('cards').innerHTML=''; document.getElementById('liveOutput').textContent=''; buildMaps([],[]); });
-document.getElementById('analyseAllBtn').addEventListener('click', ()=>{
+$('#clearGeneratedBtn').addEventListener('click', ()=>{ generated=[]; $('#cards').innerHTML=''; $('#liveOutput').textContent=''; buildMaps([],[]); });
+$('#analyseAllBtn').addEventListener('click', ()=>{
   if(!generated.length){ alert('Bitte zuerst Varianten generieren.'); return; }
   let html = `<div class="glass mt-2"><div class="font-bold mb-2">Auswertung – ${GAME.name}</div>`;
   html += '<div class="overflow-auto"><table class="text-sm min-w-full"><thead><tr>';
@@ -512,11 +560,12 @@ document.getElementById('analyseAllBtn').addEventListener('click', ()=>{
       <td class="px-2 py-1">${dist}</td>
     </tr>`;
   });
-  html += '</tbody></table></div></div>'; document.getElementById('analysisBox').innerHTML=html;
+  html += '</tbody></table></div></div>'; $('#analysisBox').innerHTML=html;
 });
 
+/* ---- Init ---- */
 (function init(){
-  GAME = GAMES[document.getElementById('gameSelect').value];
+  GAME=GAMES[$('#gameSelect').value];
   applyGame();
   const last = localStorage.getItem(lsKey('lastcheck')); if(last) setText('#kpiFresh', last);
 })();
