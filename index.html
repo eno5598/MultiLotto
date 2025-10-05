@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v0.5)</title>
+<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v0.6)</title>
 
-<!-- libs -->
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
@@ -40,7 +39,7 @@
 </head>
 <body class="p-5">
   <h1 class="title text-3xl md:text-4xl mb-2">🎛️ Multi Lottery Tool</h1>
-  <p class="opacity-80 mb-4">Ein Tool für <b>Keno</b>, <b>Eurojackpot</b> und <b>6aus49</b>. Wähle das Spiel – alle Bereiche passen sich automatisch an.</p>
+  <p class="opacity-80 mb-4">Keno, Eurojackpot und 6aus49 – alles in einer Datei. Nur Gruppen‑Modus, Maps & Analyse.</p>
 
   <div class="glass mb-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
@@ -70,7 +69,10 @@
         <button type="button" id="forceDlBtn" class="btn btn--amber">⬇️ ZIP speichern</button>
         <a id="directDl" class="btn btn--gray" target="_blank" rel="noopener">🔗 Direktlink</a>
       </div>
-      <p class="text-xs text-gray-300 mt-2">ZIP/TXT/CSV werden automatisch zusammengeführt. Bei CORS-Problemen werden mehrere Fallbacks versucht.</p>
+      <p class="text-xs text-gray-300 mt-2">ZIP/TXT/CSV werden automatisch zusammengeführt. Bei CORS‑Problemen mehrere Fallbacks.</p>
+      <details class="mt-2">
+        <summary class="cursor-pointer text-xs opacity-80">Falls Online‑Laden blockiert ist (CORS), bitte <b>Datei manuell</b> unten öffnen.</summary>
+      </details>
     </div>
 
     <div class="glass mb-3">
@@ -94,7 +96,7 @@
   </div>
 
   <div class="glass mb-4" id="genBox">
-    <h2 class="text-xl font-bold mb-2">⚡ Generieren (Gruppen-Modus)</h2>
+    <h2 class="text-xl font-bold mb-2">⚡ Generieren (Gruppen‑Modus)</h2>
 
     <div id="kenoTypeWrap" class="hidden mb-2">
       <div class="flex items-center gap-3 flex-wrap">
@@ -140,7 +142,7 @@
     <div class="mt-4">
       <div class="flex items-center gap-2 mb-1">
         <h3 class="font-bold">🗺️ Map</h3>
-        <span class="text-xs opacity-80">Spalten = 1–10, 11–20, … (Keno bis 61–70)</span>
+        <span class="text-xs opacity-80">Spalten = 1–10, 11–20, …</span>
       </div>
       <div id="mapWrap" class="relative">
         <div id="mapMain" class="map"></div>
@@ -167,11 +169,19 @@
 <script>
 /* ============================= Config ===================================== */
 const GAMES={
-  ke:{ // Keno
+  ke:{
     name:'Keno', key:'ke',
     url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_keno.zip',
     main:{from:1,to:70,pick:20,
-      groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–50',from:41,to:50}]},
+      groups:[
+        {label:'1–10',from:1,to:10},
+        {label:'11–20',from:11,to:20},
+        {label:'21–30',from:21,to:30},
+        {label:'31–40',from:31,to:40},
+        {label:'41–50',from:41,to:50},
+        {label:'51–60',from:51,to:60},
+        {label:'61–70',from:61,to:70},
+      ]},
     bonus:{enabled:false},
     formatLabel:'20 aus 70 (Ziehung) • Tippgröße = Keno‑Typ'
   },
@@ -179,7 +189,13 @@ const GAMES={
     name:'Eurojackpot', key:'ej',
     url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_eurojackpot.zip',
     main:{from:1,to:50,pick:5,
-      groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–50',from:41,to:50}]},
+      groups:[
+        {label:'1–10',from:1,to:10},
+        {label:'11–20',from:11,to:20},
+        {label:'21–30',from:21,to:30},
+        {label:'31–40',from:31,to:40},
+        {label:'41–50',from:41,to:50}
+      ]},
     bonus:{enabled:true,label:'Eurozahlen',from:1,to:12,pick:2,groups:[{label:'1–6',from:1,to:6},{label:'7–12',from:7,to:12}]},
     formatLabel:'5 aus 50 + 2 aus 12'
   },
@@ -187,7 +203,13 @@ const GAMES={
     name:'Lotto 6aus49', key:'lz',
     url:'https://www.lotto-bayern.de/static/gamebroker_2/de/download_files/archiv_lotto.zip',
     main:{from:1,to:49,pick:6,
-      groups:[{label:'1–10',from:1,to:10},{label:'11–20',from:11,to:20},{label:'21–30',from:21,to:30},{label:'31–40',from:31,to:40},{label:'41–49',from:41,to:49}]},
+      groups:[
+        {label:'1–10',from:1,to:10},
+        {label:'11–20',from:11,to:20},
+        {label:'21–30',from:21,to:30},
+        {label:'31–40',from:31,to:40},
+        {label:'41–49',from:41,to:49}
+      ]},
     bonus:{enabled:true,label:'Superzahl',from:0,to:9,pick:1,groups:[{label:'0–4',from:0,to:4},{label:'5–9',from:5,to:9}]},
     formatLabel:'6 aus 49 (+ SZ)'
   }
@@ -201,18 +223,18 @@ function lsKey(k){ return `${GAME.key}_${k}`; }
 
 /* ============================ Helpers ===================================== */
 function iso(y,m,d){ const Y=(+y<100)?(2000+(+y)):(+y); const dt=new Date(Date.UTC(Y,+m-1,+d)); return isNaN(dt)? null : dt.toISOString().slice(0,10); }
-function tokenize(line){ return line.replace(/[,;:\\t]/g,' ').trim().split(/\\s+/); }
+function tokenize(line){ return line.replace(/[,;:\t]/g,' ').trim().split(/\s+/); }
 function plausibleDMY(d,m,y){ return d>=1 && d<=31 && m>=1 && m<=12 && y>=1900 && y<=2100; }
 
 function extractDateAndNumbers(line){
   const tok=tokenize(line); if(tok.length<3) return null;
   let d=null,m=null,y=null,startIdx=0;
-  if(/^\\d+$/.test(tok[0]) && /^\\d+$/.test(tok[1]) && /^\\d+$/.test(tok[2])){ d=+tok[0]; m=+tok[1]; y=+tok[2]; if(plausibleDMY(d,m,y)) startIdx=3; else {d=m=y=null;} }
+  if(/^\d+$/.test(tok[0]) && /^\d+$/.test(tok[1]) && /^\d+$/.test(tok[2])){ d=+tok[0]; m=+tok[1]; y=+tok[2]; if(plausibleDMY(d,m,y)) startIdx=3; else {d=m=y=null;} }
   if(!d){
-    const m1=line.match(/(\\d{1,2})[.\\-\\/](\\d{1,2})[.\\-\\/](\\d{2,4})/);
+    const m1=line.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
     if(m1){ d=+m1[1]; m=+m1[2]; y=+m1[3];
       if(plausibleDMY(d,m,y)){
-        const after=line.replace(m1[0],' ').replace(/[;,]/g,' ').trim().split(/\\s+/);
+        const after=line.replace(m1[0],' ').replace(/[;,]/g,' ').trim().split(/\s+/);
         return {date: iso(y,m,d), nums: after.map(Number).filter(n=>!Number.isNaN(n))};
       }
     }
@@ -250,7 +272,7 @@ function extractSets(nums){
 /* ---- Parser ---- */
 function parseArchiveText(txt, save=true){
   try{
-    const lines=txt.replace(/\\r\\n?/g,'\\n').split('\\n').map(l=>l.trim()).filter(Boolean);
+    const lines=txt.replace(/\r\n?/g,'\n').split('\n').map(l=>l.trim()).filter(Boolean);
     draws=[]; freqMain=Array(GAME.main.to+1).fill(0); freqBonus=Array((GAME.bonus?.to??0)+1).fill(0);
     let diagCounts=[];
     for(const line of lines){
@@ -258,7 +280,8 @@ function parseArchiveText(txt, save=true){
       const sets=extractSets(dn.nums);
       diagCounts.push(sets.length? sets[0].main.length : 0);
       for(const s of sets){
-        if(s.main.length>=Math.min(GAME.main.pick, (GAME.key==='ke'?20:GAME.main.pick))){
+        const needed = (GAME.key==='ke'?20:GAME.main.pick);
+        if(s.main.length>=needed){
           draws.push({date:dn.date, main:s.main, bonus:s.bonus});
           s.main.forEach(n=>freqMain[n]++);
           (s.bonus||[]).forEach(b=>{ if(freqBonus[b]!=null) freqBonus[b]++; });
@@ -286,9 +309,8 @@ function parseArchiveText(txt, save=true){
 /* ========================== Maps ============================= */
 function buildMaps(hiMain=[], hiBonus=[]){
   const host=$('#mapMain'); host.innerHTML='';
-  // 10 Spalten fest, damit 1–10, 11–20 … gruppiert sind
-  const cols = 10;
-  host.style.gridTemplateColumns = `repeat(${cols}, minmax(0,1fr))`;
+  // 10 Spalten → 1–10, 11–20, …
+  host.style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
   const max = Math.max(...freqMain.slice(GAME.main.from)) || 1;
   for(let n=GAME.main.from; n<=GAME.main.to; n++){
     const f=freqMain[n]||0; const alpha=0.1+0.9*(f/max);
@@ -296,13 +318,10 @@ function buildMaps(hiMain=[], hiBonus=[]){
     div.style.background=`linear-gradient(180deg, rgba(0,255,240,${alpha*.3}), rgba(0,160,220,${alpha*.15}))`;
     div.innerHTML=`<span>${n}</span><span class="cnt">${f}</span>`; host.appendChild(div);
   }
-  // visuelle Separatoren nach jeder 10er-Gruppe
-  const wrap = $('#mapWrap'); const seps=$('#mapSeps'); seps.innerHTML=''; const rect = host.getBoundingClientRect();
-  const rows = Math.ceil((GAME.main.to - GAME.main.from + 1)/10);
-  // CSS-Only: wir platzieren 9 dünne Linien relativ
-  for(let i=1;i<10;i++){
-    const v=document.createElement('div'); v.className='sep'; v.style.left=`calc((100% / 10) * ${i})`; wrap.appendChild(v);
-  }
+  // vertikale Separatoren nach jeder 10er-Gruppe
+  const wrap = $('#mapWrap'); wrap.querySelectorAll('.sep').forEach(e=>e.remove());
+  for(let i=1;i<10;i++){ const v=document.createElement('div'); v.className='sep'; v.style.left=`calc((100% / 10) * ${i})`; wrap.appendChild(v); }
+
   // Bonus map
   const hostB=$('#mapBonus'); hostB.innerHTML='';
   if(GAME.bonus?.enabled){
@@ -338,7 +357,7 @@ async function fetchWithProxies(url){
         if(!(await ensureJSZip())) throw new Error('JSZip nicht geladen');
         const blob = await res.blob();
         const zip = await JSZip.loadAsync(blob);
-        const files = Object.values(zip.files).filter(f=>/\\.(txt|csv)$/i.test(f.name));
+        const files = Object.values(zip.files).filter(f=>/\.(txt|csv)$/i.test(f.name));
         if(!files.length) throw new Error('ZIP ohne TXT/CSV-Inhalt');
         let combined=''; for(const f of files){ combined += "\\n" + await f.async('string'); }
         return combined;
@@ -370,7 +389,7 @@ async function loadLatestAndDetect(){
   }catch(e){
     const saved=localStorage.getItem(lsKey('archive'));
     if(saved){ parseArchiveText(saved,false); $('#staleBanner').style.display='flex'; }
-    else { $('#statusText').textContent='Fehler beim Laden: '+e.message; }
+    else { $('#statusText').textContent='Fehler beim Laden: '+e.message+' • Bitte ZIP/TXT unten manuell auswählen.'; }
   }
 }
 
@@ -466,7 +485,7 @@ function applyGame(){
   $('#groupControls').innerHTML='';
   GAME.main.groups.forEach((g,i)=>{
     const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
-    const maxSel = (GAME.key==='ke') ? 10 : GAME.main.pick;
+    const maxSel = (GAME.key==='ke') ? 10 : GAME.main.pick; // pro Gruppe
     const options = [...Array(maxSel+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join('');
     row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`;
     $('#groupControls').appendChild(row);
@@ -491,7 +510,7 @@ function applyGame(){
   const need = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
   $('#needMain').textContent = need;
 
-  // maps: fix 10 columns for main numbers
+  // maps: 10 Spalten
   $('#mapMain').style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
   if(GAME.bonus?.enabled){
     const bCols=(GAME.bonus.to<=12)?6:10;
@@ -519,8 +538,8 @@ document.getElementById('zipInput').addEventListener('change', async (e)=>{
     for(const file of files){
       if(file.name.toLowerCase().endsWith('.zip')){
         const zip=await JSZip.loadAsync(file); const entries=Object.values(zip.files);
-        for(const f of entries){ if(/\\.(txt|csv)$/i.test(f.name)){ combined += "\\n" + await f.async('string'); } }
-      }else{ combined += "\\n" + await file.text(); }
+        for(const f of entries){ if(/\.(txt|csv)$/i.test(f.name)){ combined += "\n" + await f.async('string'); } }
+      }else{ combined += "\n" + await file.text(); }
     }
     const latest=parseArchiveText(combined,true);
     if(latest){ localStorage.setItem(lsKey('lastdate'), latest); const now=new Date().toISOString().replace('T',' ').slice(0,16); localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now); }
@@ -536,7 +555,7 @@ document.getElementById('generateBtn').addEventListener('click', ()=>{
       let key = tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x');
       let guard=0; while(seen.has(key) && guard<12){ tip = generateOne(); key=tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x'); guard++; }
       seen.add(key); generated.push(tip);
-      const out=$('#liveOutput'); out.textContent += `#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join(' ') : ''}\\n`; out.scrollTop=out.scrollHeight;
+      const out=$('#liveOutput'); out.textContent += `#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join(' ') : ''}\n`; out.scrollTop=out.scrollHeight;
       buildMaps(tip.main, tip.bonus||[]);
       $('#cards').appendChild(tipCard(i, tip));
     }catch(e){ const err=$('#groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; }
@@ -565,7 +584,7 @@ $('#analyseAllBtn').addEventListener('click', ()=>{
 
 /* ---- Init ---- */
 (function init(){
-  GAME=GAMES[$('#gameSelect').value];
+  GAME = GAMES[$('#gameSelect').value];
   applyGame();
   const last = localStorage.getItem(lsKey('lastcheck')); if(last) setText('#kpiFresh', last);
 })();
