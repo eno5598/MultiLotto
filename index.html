@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v0.6)</title>
+<title>Multi Lottery Tool • Keno • Eurojackpot • 6aus49 (v0.7)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -31,15 +31,15 @@
         background:linear-gradient(180deg,#0e1530,#15204a); color:#bdfcff;}
   .cell .cnt{position:absolute; right:6px; bottom:4px; font-size:.65rem; opacity:.8}
   .cell.sel{box-shadow:0 0 16px rgba(0,255,240,.5), inset 0 0 0 1px rgba(0,255,255,.6);}
-  .sep{position:absolute; top:-6px; bottom:-6px; width:2px; background:rgba(255,255,255,.06); border-left:1px dashed rgba(255,255,255,.18);}
   .banner{display:none;align-items:center;gap:10px; border:1px solid rgba(255,255,255,.15); border-radius:12px; padding:10px 12px; margin-bottom:10px;}
   .banner--new{background:rgba(21,128,61,.2); border-color:#15803d;}
   .banner--warn{background:rgba(245,158,11,.15); border-color:var(--amber);}
+  textarea{background:#0b1026; border:1px solid rgba(120,160,255,.25); width:100%; min-height:120px; border-radius:10px; padding:8px; color:#d8e9ff;}
 </style>
 </head>
 <body class="p-5">
   <h1 class="title text-3xl md:text-4xl mb-2">🎛️ Multi Lottery Tool</h1>
-  <p class="opacity-80 mb-4">Keno, Eurojackpot und 6aus49 – alles in einer Datei. Nur Gruppen‑Modus, Maps & Analyse.</p>
+  <p class="opacity-80 mb-4">Keno, Eurojackpot und 6aus49 – Gruppen‑Modus, Maps & Analyse. (v0.7)</p>
 
   <div class="glass mb-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
@@ -70,9 +70,6 @@
         <a id="directDl" class="btn btn--gray" target="_blank" rel="noopener">🔗 Direktlink</a>
       </div>
       <p class="text-xs text-gray-300 mt-2">ZIP/TXT/CSV werden automatisch zusammengeführt. Bei CORS‑Problemen mehrere Fallbacks.</p>
-      <details class="mt-2">
-        <summary class="cursor-pointer text-xs opacity-80">Falls Online‑Laden blockiert ist (CORS), bitte <b>Datei manuell</b> unten öffnen.</summary>
-      </details>
     </div>
 
     <div class="glass mb-3">
@@ -82,6 +79,15 @@
         <input multiple type="file" id="zipInput" class="file-input" accept=".zip,.txt,.csv">
       </label>
       <span id="fileName" class="ml-2 text-sm opacity-80">Keine Datei ausgewählt</span>
+    </div>
+
+    <div class="glass mb-3">
+      <div class="font-semibold mb-2">Oder Rohtext einfügen</div>
+      <textarea id="rawPaste" placeholder="Hier Inhalte aus der Archiv‑Datei einfügen …"></textarea>
+      <div class="mt-2 flex gap-2">
+        <button type="button" id="parsePasteBtn" class="btn btn--amber">📄 Rohtext parsen</button>
+        <button type="button" id="clearPasteBtn" class="btn btn--gray">🗑️ Leeren</button>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
@@ -146,7 +152,6 @@
       </div>
       <div id="mapWrap" class="relative">
         <div id="mapMain" class="map"></div>
-        <div id="mapSeps"></div>
       </div>
       <div id="bonusMapWrap" class="mt-3 hidden">
         <div class="flex items-center gap-2 mb-1">
@@ -167,7 +172,6 @@
   </div>
 
 <script>
-/* ============================= Config ===================================== */
 const GAMES={
   ke:{
     name:'Keno', key:'ke',
@@ -215,42 +219,35 @@ const GAMES={
   }
 };
 
-/* ============================= State ====================================== */
 let GAME=GAMES.ke; let draws=[]; let freqMain=[]; let freqBonus=[]; let generated=[];
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
 function setText(sel,val){ const el=$(sel); if(el) el.textContent=val; }
 function lsKey(k){ return `${GAME.key}_${k}`; }
 
-/* ============================ Helpers ===================================== */
+/* =========== Date + token utils ============== */
 function iso(y,m,d){ const Y=(+y<100)?(2000+(+y)):(+y); const dt=new Date(Date.UTC(Y,+m-1,+d)); return isNaN(dt)? null : dt.toISOString().slice(0,10); }
-function tokenize(line){ return line.replace(/[,;:\t]/g,' ').trim().split(/\s+/); }
 function plausibleDMY(d,m,y){ return d>=1 && d<=31 && m>=1 && m<=12 && y>=1900 && y<=2100; }
-
-function extractDateAndNumbers(line){
-  const tok=tokenize(line); if(tok.length<3) return null;
-  let d=null,m=null,y=null,startIdx=0;
-  if(/^\d+$/.test(tok[0]) && /^\d+$/.test(tok[1]) && /^\d+$/.test(tok[2])){ d=+tok[0]; m=+tok[1]; y=+tok[2]; if(plausibleDMY(d,m,y)) startIdx=3; else {d=m=y=null;} }
-  if(!d){
-    const m1=line.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
-    if(m1){ d=+m1[1]; m=+m1[2]; y=+m1[3];
-      if(plausibleDMY(d,m,y)){
-        const after=line.replace(m1[0],' ').replace(/[;,]/g,' ').trim().split(/\s+/);
-        return {date: iso(y,m,d), nums: after.map(Number).filter(n=>!Number.isNaN(n))};
-      }
-    }
-  }
-  if(!d) return null;
-  return { date: iso(y,m,d), nums: tok.slice(startIdx).map(Number).filter(n=>!Number.isNaN(n)) };
+function takeDateAnywhere(line){
+  const m=line.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
+  if(!m) return null;
+  const d=+m[1], mo=+m[2], y=+m[3];
+  if(!plausibleDMY(d,mo,y)) return null;
+  const after = line.slice(m.index + m[0].length);
+  return { date: iso(y,mo,d), tail: after };
+}
+function numbersFromTail(tail){
+  const toks = tail.replace(/[^\d\s,;|\t\-]/g, ' ').replace(/[-]/g,' ').split(/[\s,;|\t]+/);
+  const nums = toks.map(x=>parseInt(x,10)).filter(n=>Number.isInteger(n));
+  return nums;
 }
 
-/* ---- Splitter: Keno = erstes 20er-Set je Zeile ----- */
+/* =========== Set extractors ============== */
 function extractSets(nums){
   if(GAME.key==='ke'){
     const main=[];
     for(const n of nums){ if(n>=1 && n<=70){ main.push(n); if(main.length===20) break; } }
     return (main.length===20)? [{main: Array.from(new Set(main)).sort((a,b)=>a-b), bonus:[]}] : [];
   }
-  // Eurojackpot & 6aus49: mehrere Sets (A/B) möglich
   const out=[]; let i=0;
   while(i<nums.length){
     const main=[]; let j=i;
@@ -269,47 +266,49 @@ function extractSets(nums){
   return out;
 }
 
-/* ---- Parser ---- */
+/* =========== Main parser ============== */
 function parseArchiveText(txt, save=true){
   try{
-    const lines=txt.replace(/\r\n?/g,'\n').split('\n').map(l=>l.trim()).filter(Boolean);
+    const lines = txt.replace(/\uFEFF/g,'').replace(/\r\n?/g,'\n').split('\n').map(l=>l.trim()).filter(Boolean);
     draws=[]; freqMain=Array(GAME.main.to+1).fill(0); freqBonus=Array((GAME.bonus?.to??0)+1).fill(0);
-    let diagCounts=[];
+    let diag = {total:0, matched:0, skipped:0, reasons:{}};
+
     for(const line of lines){
-      const dn=extractDateAndNumbers(line); if(!dn||!dn.date) continue;
-      const sets=extractSets(dn.nums);
-      diagCounts.push(sets.length? sets[0].main.length : 0);
+      diag.total++;
+      const rec = takeDateAnywhere(line);
+      if(!rec){ diag.skipped++; diag.reasons['kein Datum']=(diag.reasons['kein Datum']||0)+1; continue; }
+      const nums = numbersFromTail(rec.tail);
+      const sets = extractSets(nums);
+      if(!sets.length){ diag.skipped++; diag.reasons['<20 Zahlen (Keno) / unvollständig']=(diag.reasons['<20 Zahlen (Keno) / unvollständig']||0)+1; continue; }
       for(const s of sets){
         const needed = (GAME.key==='ke'?20:GAME.main.pick);
         if(s.main.length>=needed){
-          draws.push({date:dn.date, main:s.main, bonus:s.bonus});
+          draws.push({date:rec.date, main:s.main, bonus:s.bonus});
           s.main.forEach(n=>freqMain[n]++);
           (s.bonus||[]).forEach(b=>{ if(freqBonus[b]!=null) freqBonus[b]++; });
-        }
+          diag.matched++;
+        } else { diag.skipped++; diag.reasons['nicht genug Hauptzahlen']=(diag.reasons['nicht genug Hauptzahlen']||0)+1; }
       }
     }
+
     if(!draws.length) throw new Error('Keine gültigen Ziehungen erkannt.');
     draws.sort((a,b)=>a.date.localeCompare(b.date));
     setText('#kpiCount', draws.length); setText('#kpiFrom', draws[0].date); setText('#kpiTo', draws.at(-1).date);
-    $('#statusText').textContent='Archiv geladen ✔';
+    document.getElementById('statusText').textContent='Archiv geladen ✔';
     buildMaps([],[]);
     if(save){ localStorage.setItem(lsKey('archive'), txt); localStorage.setItem(lsKey('lastdate'), draws.at(-1).date); }
-    if(GAME.key==='ke'){
-      const vals = diagCounts.filter(Boolean);
-      const min = vals.length? Math.min(...vals) : '–';
-      const max = vals.length? Math.max(...vals) : '–';
-      const avg = vals.length? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : '–';
-      const d = document.getElementById('diag'); d.classList.remove('hidden');
-      d.innerHTML = `🔎 Keno-Diagnose: erkannte Hauptzahlen je Zeile → min <b>${min}</b>, max <b>${max}</b>, Ø <b>${avg}</b>. Erwartet: 20.`;
-    } else { document.getElementById('diag').classList.add('hidden'); }
+
+    const d = document.getElementById('diag'); d.classList.remove('hidden');
+    const reasons = Object.entries(diag.reasons).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<li>${k}: <b>${v}</b></li>`).join('');
+    d.innerHTML = `🔎 Parser-Diagnose: Zeilen insgesamt <b>${diag.total}</b>, erkannt <b>${diag.matched}</b>, übersprungen <b>${diag.skipped}</b><ul class="list-disc pl-6">${reasons}</ul>`;
+
     return draws.at(-1).date;
-  }catch(e){ $('#statusText').textContent='Fehler: '+e.message; return null; }
+  }catch(e){ document.getElementById('statusText').textContent='Fehler: '+e.message; return null; }
 }
 
 /* ========================== Maps ============================= */
 function buildMaps(hiMain=[], hiBonus=[]){
-  const host=$('#mapMain'); host.innerHTML='';
-  // 10 Spalten → 1–10, 11–20, …
+  const host=document.getElementById('mapMain'); host.innerHTML='';
   host.style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
   const max = Math.max(...freqMain.slice(GAME.main.from)) || 1;
   for(let n=GAME.main.from; n<=GAME.main.to; n++){
@@ -318,23 +317,18 @@ function buildMaps(hiMain=[], hiBonus=[]){
     div.style.background=`linear-gradient(180deg, rgba(0,255,240,${alpha*.3}), rgba(0,160,220,${alpha*.15}))`;
     div.innerHTML=`<span>${n}</span><span class="cnt">${f}</span>`; host.appendChild(div);
   }
-  // vertikale Separatoren nach jeder 10er-Gruppe
-  const wrap = $('#mapWrap'); wrap.querySelectorAll('.sep').forEach(e=>e.remove());
-  for(let i=1;i<10;i++){ const v=document.createElement('div'); v.className='sep'; v.style.left=`calc((100% / 10) * ${i})`; wrap.appendChild(v); }
-
-  // Bonus map
-  const hostB=$('#mapBonus'); hostB.innerHTML='';
+  const hostB=document.getElementById('mapBonus'); if(hostB) hostB.innerHTML='';
   if(GAME.bonus?.enabled){
-    $('#bonusMapWrap').classList.remove('hidden');
-    const colsB=(GAME.bonus.to<=12)?6:10; hostB.style.gridTemplateColumns=`repeat(${colsB}, minmax(0,1fr))`;
+    document.getElementById('bonusMapWrap').classList.remove('hidden');
+    const colsB=(GAME.bonus.to<=12)?6:10; document.getElementById('mapBonus').style.gridTemplateColumns=`repeat(${colsB}, minmax(0,1fr))`;
     const maxB=Math.max(...freqBonus.slice(GAME.bonus.from))||1;
     for(let b=GAME.bonus.from; b<=GAME.bonus.to; b++){
       const f=freqBonus[b]||0; const alpha=0.1+0.9*(f/maxB);
       const div=document.createElement('div'); div.className='cell'+(hiBonus.includes(b)?' sel':'');
       div.style.background=`linear-gradient(180deg, rgba(255,225,0,${alpha*.25}), rgba(255,160,0,${alpha*.15}))`;
-      div.innerHTML=`<span>${b}</span><span class="cnt">${f}</span>`; hostB.appendChild(div);
+      div.innerHTML=`<span>${b}</span><span class="cnt">${f}</span>`; document.getElementById('mapBonus').appendChild(div);
     }
-  } else { $('#bonusMapWrap').classList.add('hidden'); }
+  } else { document.getElementById('bonusMapWrap').classList.add('hidden'); }
 }
 
 /* ======================== Downloader ========================= */
@@ -359,7 +353,7 @@ async function fetchWithProxies(url){
         const zip = await JSZip.loadAsync(blob);
         const files = Object.values(zip.files).filter(f=>/\.(txt|csv)$/i.test(f.name));
         if(!files.length) throw new Error('ZIP ohne TXT/CSV-Inhalt');
-        let combined=''; for(const f of files){ combined += "\\n" + await f.async('string'); }
+        let combined=''; for(const f of files){ combined += "\n" + await f.async('string'); }
         return combined;
       } else {
         return await res.text();
@@ -372,46 +366,46 @@ async function fetchWithProxies(url){
 }
 
 async function loadLatestAndDetect(){
-  const url=$('#archiveUrl').value.trim();
-  $('#updateBanner').style.display='none'; $('#staleBanner').style.display='none';
-  if(!url){ $('#statusText').textContent='Keine URL gesetzt. Bitte manuell laden.'; return; }
-  $('#statusText').textContent='Online-Archiv wird geprüft…';
+  const url=document.getElementById('archiveUrl').value.trim();
+  document.getElementById('updateBanner').style.display='none'; document.getElementById('staleBanner').style.display='none';
+  if(!url){ document.getElementById('statusText').textContent='Keine URL gesetzt. Bitte manuell laden.'; return; }
+  document.getElementById('statusText').textContent='Online-Archiv wird geprüft…';
   try{
     const raw=await fetchWithProxies(url);
     const latest=parseArchiveText(raw,true);
     const lastSeen=localStorage.getItem(lsKey('lastdate'));
     if(latest){
       const newDetected=(!lastSeen || latest > lastSeen);
-      if(newDetected){ $('#newDrawDate').textContent=latest; $('#updateBanner').style.display='flex'; }
+      if(newDetected){ document.getElementById('newDrawDate').textContent=latest; document.getElementById('updateBanner').style.display='flex'; }
       const now=new Date().toISOString().replace('T',' ').slice(0,16);
       localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now);
     }
   }catch(e){
     const saved=localStorage.getItem(lsKey('archive'));
-    if(saved){ parseArchiveText(saved,false); $('#staleBanner').style.display='flex'; }
-    else { $('#statusText').textContent='Fehler beim Laden: '+e.message+' • Bitte ZIP/TXT unten manuell auswählen.'; }
+    if(saved){ parseArchiveText(saved,false); document.getElementById('staleBanner').style.display='flex'; }
+    else { document.getElementById('statusText').textContent='Fehler beim Laden: '+e.message+' • Bitte ZIP/TXT unten manuell auswählen oder Rohtext einfügen.'; }
   }
 }
 
 /* ============================ Generator/Analyse =========================== */
 function setCounterEl(el, val, total){ el.textContent = `${val}/${total}`; el.classList.toggle('green', val===total); el.classList.toggle('red', val!==total); }
 function updateGroupCounters(){
-  let sumG=0; $$('#groupControls select').forEach(s=>{ const v=+s.value||0; sumG+=v; s.parentElement.lastChild.textContent=v; });
-  const need = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  setCounterEl($('#mainCounter'), sumG, need);
+  let sumG=0; Array.from(document.querySelectorAll('#groupControls select')).forEach(s=>{ const v=+s.value||0; sumG+=v; s.parentElement.lastChild.textContent=v; });
+  const need = (GAME.key==='ke') ? (+document.getElementById('kenoType').value||10) : GAME.main.pick;
+  setCounterEl(document.getElementById('mainCounter'), sumG, need);
   if(GAME.bonus?.enabled){
-    let sumB=0; $$('#bonusControls select').forEach(s=>{ const v=+s.value||0; sumB+=v; s.parentElement.lastChild.textContent=v; });
-    setCounterEl($('#bonusCounter'), sumB, GAME.bonus.pick);
+    let sumB=0; Array.from(document.querySelectorAll('#bonusControls select')).forEach(s=>{ const v=+s.value||0; sumB+=v; s.parentElement.lastChild.textContent=v; });
+    setCounterEl(document.getElementById('bonusCounter'), sumB, GAME.bonus.pick);
   }
-  const err=$('#groupError'); err.classList.add('hidden'); err.textContent='';
+  const err=document.getElementById('groupError'); err.classList.add('hidden'); err.textContent='';
   if(sumG!==need){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${need} Hauptzahlen wählen.`; }
   if(GAME.bonus?.enabled){
-    let sumB=0; $$('#bonusControls select').forEach(s=> sumB+= (+s.value||0));
+    let sumB=0; Array.from(document.querySelectorAll('#bonusControls select')).forEach(s=> sumB+= (+s.value||0));
     if(sumB!==GAME.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${GAME.bonus.pick} ${GAME.bonus.label} wählen.`; }
   }
 }
 
-function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j]]; } return a; }
 function pickFromRange(from,to,avoid,count,weightFn){
   const bag=[]; for(let n=from;n<=to;n++){ if(!avoid.includes(n)){ const w=Math.max(1, weightFn?weightFn(n):1); for(let k=0;k<w;k++) bag.push(n);} }
   shuffle(bag);
@@ -423,16 +417,16 @@ function weightMain(n){ const max=Math.max(...freqMain.slice(GAME.main.from))||1
 function weightBonus(n){ const max=Math.max(...freqBonus.slice(GAME.bonus?.from||0))||1; return 1+Math.round(3*((freqBonus[n]||0)/max)); }
 
 function generateOne(){
-  const needMain = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  const wantMain = $$('#groupControls select').map(s=>+s.value||0);
+  const needMain = (GAME.key==='ke') ? (+document.getElementById('kenoType').value||10) : GAME.main.pick;
+  const wantMain = Array.from(document.querySelectorAll('#groupControls select')).map(s=>+s.value||0);
   const sumMain = wantMain.reduce((a,b)=>a+b,0);
-  const err=$('#groupError'); err.classList.add('hidden'); err.textContent='';
+  const err=document.getElementById('groupError'); err.classList.add('hidden'); err.textContent='';
   if(sumMain!==needMain){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${needMain} Hauptzahlen wählen.`; throw new Error('Gruppen unvollständig'); }
   let main=[]; GAME.main.groups.forEach((g,i)=>{ const need=wantMain[i]; if(need>0){ main.push(...pickFromRange(g.from, g.to, main, need, weightMain)); } });
   main = Array.from(new Set(main)).sort((a,b)=>a-b).slice(0,needMain);
   let bonus=[];
   if(GAME.bonus?.enabled){
-    const wantB = $$('#bonusControls select').map(s=>+s.value||0);
+    const wantB = Array.from(document.querySelectorAll('#bonusControls select')).map(s=>+s.value||0);
     const sumB = wantB.reduce((a,b)=>a+b,0);
     if(sumB!==GAME.bonus.pick){ err.classList.remove('hidden'); err.textContent=`Bitte genau ${GAME.bonus.pick} ${GAME.bonus.label} wählen.`; throw new Error('Bonus-Gruppen unvollständig'); }
     GAME.bonus.groups.forEach((g,i)=>{ const need=wantB[i]; if(need>0){ bonus.push(...pickFromRange(g.from, g.to, bonus, need, weightBonus)); } });
@@ -471,68 +465,63 @@ function tipCard(idx, tip){
   return card;
 }
 
-/* ============================= Events ===================================== */
 function applyGame(){
-  $('#archiveUrl').value = GAME.url || '';
-  $('#directDl').href  = GAME.url || '#';
-  $('#kpiFormat').textContent = GAME.formatLabel;
-  $('#gameMeta').textContent = `${GAME.name}: Haupt ${GAME.main.from}–${GAME.main.to}` + (GAME.key==='ke' ? ' (Archiv: 20 Zahlen je Ziehung)' : '') + (GAME.bonus?.enabled? ` • ${GAME.bonus.label} ${GAME.bonus.from}–${GAME.bonus.to}`:'');
+  document.getElementById('archiveUrl').value = GAME.url || '';
+  document.getElementById('directDl').href  = GAME.url || '#';
+  document.getElementById('kpiFormat').textContent = GAME.formatLabel;
+  document.getElementById('gameMeta').textContent = `${GAME.name}: Haupt ${GAME.main.from}–${GAME.main.to}` + (GAME.key==='ke' ? ' (Archiv: 20 Zahlen je Ziehung)' : '') + (GAME.bonus?.enabled? ` • ${GAME.bonus.label} ${GAME.bonus.from}–${GAME.bonus.to}`:'');
 
-  // Keno‑Typ UI
-  $('#kenoTypeWrap').classList.toggle('hidden', GAME.key!=='ke');
+  document.getElementById('kenoTypeWrap').classList.toggle('hidden', GAME.key!=='ke');
 
-  // groups
-  $('#groupControls').innerHTML='';
+  document.getElementById('groupControls').innerHTML='';
   GAME.main.groups.forEach((g,i)=>{
     const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
-    const maxSel = (GAME.key==='ke') ? 10 : GAME.main.pick; // pro Gruppe
+    const maxSel = (GAME.key==='ke') ? 10 : GAME.main.pick;
     const options = [...Array(maxSel+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join('');
     row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`;
-    $('#groupControls').appendChild(row);
+    document.getElementById('groupControls').appendChild(row);
   });
-  $$('#groupControls select').forEach(sel=> sel.addEventListener('change', updateGroupCounters));
+  Array.from(document.querySelectorAll('#groupControls select')).forEach(sel=> sel.addEventListener('change', updateGroupCounters));
 
-  // bonus groups
-  $('#bonusControls').innerHTML='';
-  $('#bonusMapWrap').classList.toggle('hidden', !(GAME.bonus?.enabled));
-  $('#bonusCounter').style.display = (GAME.bonus?.enabled)? 'inline-block':'none';
+  document.getElementById('bonusControls').innerHTML='';
+  document.getElementById('bonusMapWrap').classList.toggle('hidden', !(GAME.bonus?.enabled));
+  document.getElementById('bonusCounter').style.display = (GAME.bonus?.enabled)? 'inline-block':'none';
   if(GAME.bonus?.enabled){
     GAME.bonus.groups.forEach((g,i)=>{
       const row=document.createElement('div'); row.className='grid grid-cols-3 gap-2 items-center';
       const options = [...Array(GAME.bonus.pick+1)].map((_,v)=>`<option value="${v}">${v}</option>`).join('');
       row.innerHTML=`<div class="font-bold">${g.label}</div><select class="bg-gray-900 p-2 rounded bonus" data-idx="${i}">${options}</select><div class="text-right text-sm text-gray-400">0</div>`;
-      $('#bonusControls').appendChild(row);
+      document.getElementById('bonusControls').appendChild(row);
     });
-    $$('#bonusControls select').forEach(sel=> sel.addEventListener('change', updateGroupCounters));
+    Array.from(document.querySelectorAll('#bonusControls select')).forEach(sel=> sel.addEventListener('change', updateGroupCounters));
   }
 
-  // need counter
-  const need = (GAME.key==='ke') ? (+($('#kenoType').value||10)) : GAME.main.pick;
-  $('#needMain').textContent = need;
+  const need = (GAME.key==='ke') ? (+document.getElementById('kenoType').value||10) : GAME.main.pick;
+  document.getElementById('needMain').textContent = need;
 
-  // maps: 10 Spalten
-  $('#mapMain').style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
+  document.getElementById('mapMain').style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
   if(GAME.bonus?.enabled){
     const bCols=(GAME.bonus.to<=12)?6:10;
-    $('#mapBonus').style.gridTemplateColumns=`repeat(${bCols}, minmax(0,1fr))`;
+    document.getElementById('mapBonus').style.gridTemplateColumns=`repeat(${bCols}, minmax(0,1fr))`;
   }
 
   draws=[]; freqMain = Array(GAME.main.to+1).fill(0); freqBonus= Array((GAME.bonus?.to??0)+1).fill(0); generated=[];
-  $('#diag').classList.add('hidden');
-  $('#statusText').textContent='Bitte Archiv laden (automatisch beim Öffnen)';
+  document.getElementById('diag').classList.remove('hidden'); document.getElementById('diag').innerHTML='';
+  document.getElementById('statusText').textContent='Bitte Archiv laden (automatisch beim Öffnen)';
   buildMaps([],[]); updateGroupCounters();
   setTimeout(loadLatestAndDetect, 200);
 }
-$('#gameSelect').addEventListener('change', e=>{ GAME=GAMES[e.target.value]; applyGame(); });
-$('#kenoType').addEventListener('change', updateGroupCounters);
+
+document.getElementById('gameSelect').addEventListener('change', e=>{ GAME=GAMES[e.target.value]; applyGame(); });
+document.getElementById('kenoType').addEventListener('change', updateGroupCounters);
 
 document.getElementById('loadLatestBtn').addEventListener('click', loadLatestAndDetect);
 document.getElementById('forceDlBtn').addEventListener('click', async ()=>{
-  const url=$('#archiveUrl').value.trim();
+  const url=document.getElementById('archiveUrl').value.trim();
   try{ const res=await fetch(url,{mode:'cors', referrerPolicy:'no-referrer'}); const blob=await res.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${GAME.key}_archiv.zip`; a.click(); URL.revokeObjectURL(a.href); }catch(e){ alert('Direkt-Download nicht möglich: '+e.message); }
 });
 document.getElementById('zipInput').addEventListener('change', async (e)=>{
-  const files=Array.from(e.target.files||[]); if(!files.length) return; $('#fileName').textContent=files.map(f=>f.name).join(', ');
+  const files=Array.from(e.target.files||[]); if(!files.length) return; document.getElementById('fileName').textContent=files.map(f=>f.name).join(', ');
   try{
     let combined='';
     for(const file of files){
@@ -543,26 +532,33 @@ document.getElementById('zipInput').addEventListener('change', async (e)=>{
     }
     const latest=parseArchiveText(combined,true);
     if(latest){ localStorage.setItem(lsKey('lastdate'), latest); const now=new Date().toISOString().replace('T',' ').slice(0,16); localStorage.setItem(lsKey('lastcheck'), now); setText('#kpiFresh', now); }
-  }catch(err){ $('#statusText').textContent='Fehler: '+err.message; }
+  }catch(err){ document.getElementById('statusText').textContent='Fehler: '+err.message; }
 });
+
+document.getElementById('parsePasteBtn').addEventListener('click', ()=>{
+  const txt = document.getElementById('rawPaste').value || '';
+  if(!txt.trim()){ alert('Bitte zuerst Text einfügen.'); return; }
+  parseArchiveText(txt,true);
+});
+document.getElementById('clearPasteBtn').addEventListener('click', ()=>{ document.getElementById('rawPaste').value=''; });
 
 document.getElementById('generateBtn').addEventListener('click', ()=>{
   if(!draws.length){ alert('Bitte zuerst ein Archiv laden.'); return; }
-  const total= +$('#kombis').value || 1; $('#liveOutput').textContent=''; $('#cards').innerHTML=''; generated=[]; const seen=new Set();
+  const total= +document.getElementById('kombis').value || 1; document.getElementById('liveOutput').textContent=''; document.getElementById('cards').innerHTML=''; generated=[]; const seen=new Set();
   for(let i=1;i<=total;i++){
     try{
       let tip = generateOne();
       let key = tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x');
       let guard=0; while(seen.has(key) && guard<12){ tip = generateOne(); key=tip.main.join('-')+'|'+(tip.bonus?tip.bonus.join('-'):'x'); guard++; }
       seen.add(key); generated.push(tip);
-      const out=$('#liveOutput'); out.textContent += `#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join(' ') : ''}\n`; out.scrollTop=out.scrollHeight;
+      const out=document.getElementById('liveOutput'); out.textContent += `#${i}: ${tip.main.join(' ')}${(tip.bonus&&tip.bonus.length)? ' | Bonus: '+tip.bonus.join(' ') : ''}\n`; out.scrollTop=out.scrollHeight;
       buildMaps(tip.main, tip.bonus||[]);
-      $('#cards').appendChild(tipCard(i, tip));
-    }catch(e){ const err=$('#groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; }
+      document.getElementById('cards').appendChild(tipCard(i, tip));
+    }catch(e){ const err=document.getElementById('groupError'); err.classList.remove('hidden'); err.textContent=e.message; break; }
   }
 });
-$('#clearGeneratedBtn').addEventListener('click', ()=>{ generated=[]; $('#cards').innerHTML=''; $('#liveOutput').textContent=''; buildMaps([],[]); });
-$('#analyseAllBtn').addEventListener('click', ()=>{
+document.getElementById('clearGeneratedBtn').addEventListener('click', ()=>{ generated=[]; document.getElementById('cards').innerHTML=''; document.getElementById('liveOutput').textContent=''; buildMaps([],[]); });
+document.getElementById('analyseAllBtn').addEventListener('click', ()=>{
   if(!generated.length){ alert('Bitte zuerst Varianten generieren.'); return; }
   let html = `<div class="glass mt-2"><div class="font-bold mb-2">Auswertung – ${GAME.name}</div>`;
   html += '<div class="overflow-auto"><table class="text-sm min-w-full"><thead><tr>';
@@ -579,12 +575,12 @@ $('#analyseAllBtn').addEventListener('click', ()=>{
       <td class="px-2 py-1">${dist}</td>
     </tr>`;
   });
-  html += '</tbody></table></div></div>'; $('#analysisBox').innerHTML=html;
+  html += '</tbody></table></div></div>'; document.getElementById('analysisBox').innerHTML=html;
 });
 
-/* ---- Init ---- */
 (function init(){
-  GAME = GAMES[$('#gameSelect').value];
+  GAME = GAMES[document.getElementById('gameSelect').value];
+  document.getElementById('mapMain').style.gridTemplateColumns = `repeat(10, minmax(0,1fr))`;
   applyGame();
   const last = localStorage.getItem(lsKey('lastcheck')); if(last) setText('#kpiFresh', last);
 })();
